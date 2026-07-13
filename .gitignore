@@ -1,0 +1,27 @@
+# ── Rust / WASM worker ─────────────────────────────────────
+worker/target/
+worker/build/
+
+# ── SvelteKit frontend ──────────────────────────────────────
+frontend/node_modules/
+frontend/.svelte-kit/
+frontend/.wrangler/
+frontend/dist/
+
+# ── Wrangler local state ────────────────────────────────────
+.wrangler/state/
+.wrangler/tmp/
+.wrangler/cache/
+
+# ── Environment / secrets ───────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── OS / editor ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# ── Snapshots (local-only diffing tool) ─────────────────────
+.snapshots/

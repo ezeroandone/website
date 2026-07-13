@@ -1,0 +1,236 @@
+/* ============================================================
+   eZeroAndOne Design System v2 — Premium Tech Aesthetic
+   Pure Black · Inter Tight · Outfit · Material Symbols
+   ============================================================ */
+
+/* ── CSS custom properties ─────────────────────────────────── */
+:root {
+	/* Canvas — pure black throughout */
+	--bg-base:          #000000;
+	--bg-surface:       #000000;
+	--bg-elevated:      #0a0a0a;
+	--bg-card:          #080808;
+
+	/* Typography */
+	--text-primary:     #ffffff;
+	--text-secondary:   rgba(255, 255, 255, 0.6);
+	--text-muted:       rgba(255, 255, 255, 0.3);
+
+	/* Brand accent */
+	--accent-blue:      #0052FF;
+	--accent-blue-hi:   #00C2FF;
+	--accent-glow:      rgba(0, 82, 255, 0.35);
+	--accent-glow-hi:   rgba(0, 194, 255, 0.25);
+
+	/* Status colours */
+	--accent-green:     #00E676;
+	--accent-red:       #FF3366;
+	--accent-yellow:    #FFD600;
+
+	/* Liquid glass layer */
+	--glass-bg:         rgba(0, 0, 0, 0.75);
+	--glass-border:     rgba(255, 255, 255, 0.10);
+	--glass-blur:       12px;
+	--glass-shadow:     0 8px 32px rgba(0, 0, 0, 0.6);
+
+	/* Legacy aliases (keep existing component refs working) */
+	--color-bg-primary:      var(--bg-base);
+	--color-bg-secondary:    var(--bg-surface);
+	--color-bg-surface:      var(--bg-surface);
+	--color-bg-elevated:     var(--bg-elevated);
+	--color-text-primary:    var(--text-primary);
+	--color-text-secondary:  var(--text-secondary);
+	--color-text-muted:      var(--text-muted);
+	--color-border:          var(--glass-border);
+	--color-border-strong:   rgba(255, 255, 255, 0.18);
+	--glow-blue:             0 0 24px var(--accent-glow);
+	--glow-green:            0 0 24px rgba(0, 230, 118, 0.3);
+	--glow-red:              0 0 24px rgba(255, 51, 102, 0.3);
+	--glow-yellow:           0 0 24px rgba(255, 214, 0, 0.3);
+
+	/* Header height token (used in 100vh section calc) */
+	--header-height:    64px;
+
+	/* Typography stacks */
+	--font-heading:     'Inter Tight', 'Inter', system-ui, sans-serif;
+	--font-body:        'Outfit', 'Inter', system-ui, sans-serif;
+
+	/* Motion */
+	--ease-out-expo:    cubic-bezier(0.16, 1, 0.3, 1);
+	--transition-std:   all 0.3s var(--ease-out-expo);
+}
+
+/* Light theme — keep tokens consistent, shift canvas to near-white */
+:root[data-theme="light"] {
+	--bg-base:          #f8f8f8;
+	--bg-surface:       #f0f0f0;
+	--bg-elevated:      #e8e8e8;
+	--bg-card:          #ffffff;
+	--text-primary:     #000000;
+	--text-secondary:   rgba(0, 0, 0, 0.6);
+	--text-muted:       rgba(0, 0, 0, 0.35);
+	--glass-bg:         rgba(255, 255, 255, 0.80);
+	--glass-border:     rgba(0, 0, 0, 0.10);
+	--accent-blue:      #0052FF;
+	--accent-blue-hi:   #0084CC;
+	--accent-glow:      rgba(0, 82, 255, 0.20);
+	--color-bg-primary:     var(--bg-base);
+	--color-bg-secondary:   var(--bg-surface);
+	--color-bg-surface:     var(--bg-surface);
+	--color-bg-elevated:    var(--bg-elevated);
+	--color-text-primary:   var(--text-primary);
+	--color-text-secondary: var(--text-secondary);
+	--color-text-muted:     var(--text-muted);
+	--color-border:         var(--glass-border);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+	font-family:             var(--font-body);
+	font-size:               16px;
+	-webkit-font-smoothing:  antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	scroll-behavior:         smooth;
+}
+
+body {
+	margin:           0;
+	padding:          0;
+	background-color: var(--bg-base);
+	color:            var(--text-primary);
+	min-height:       100vh;
+	/* Push all page content below the fixed header */
+	padding-top:      var(--header-height);
+}
+
+a {
+	color:           var(--accent-blue-hi);
+	text-decoration: none;
+	transition:      color 0.2s ease;
+}
+
+a:hover { text-decoration: underline; }
+
+/* ── Material Symbols helper ───────────────────────────────── */
+.icon {
+	font-family:               'Material Symbols Outlined';
+	font-weight:               normal;
+	font-style:                normal;
+	font-size:                 20px;
+	line-height:               1;
+	letter-spacing:            normal;
+	text-transform:            none;
+	display:                   inline-block;
+	white-space:               nowrap;
+	word-wrap:                 normal;
+	direction:                 ltr;
+	-webkit-font-smoothing:    antialiased;
+	font-variation-settings:   'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+	vertical-align:            middle;
+	user-select:               none;
+}
+
+.icon--filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+
+/* ── Typography scale ──────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+	font-family:    var(--font-heading);
+	font-weight:    800;
+	letter-spacing: -0.03em;
+	line-height:    1.05;
+	color:          var(--text-primary);
+	margin:         0;
+}
+
+p { font-family: var(--font-body); line-height: 1.7; margin: 0; }
+
+/* ── Shared utility classes ────────────────────────────────── */
+.section-constrained {
+	/* Use min-height so content never gets clipped — body already offset by header */
+	min-height: calc(100svh - var(--header-height));
+	display: flex;
+	align-items: center;
+	/* Never hide content — overflow must always be visible */
+	overflow: visible;
+	/* Subtle separator between sections */
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.inner {
+	max-width: 1200px;
+	margin:    0 auto;
+	padding:   0 2rem;
+	width:     100%;
+}
+
+/* ── Liquid glass surface ──────────────────────────────────── */
+.glass {
+	background:                var(--glass-bg);
+	backdrop-filter:           blur(var(--glass-blur));
+	-webkit-backdrop-filter:   blur(var(--glass-blur));
+	border:                    1px solid var(--glass-border);
+}
+
+/* ── Premium card ──────────────────────────────────────────── */
+.card {
+	background:    var(--bg-card);
+	border:        1px solid var(--glass-border);
+	border-radius: 16px;
+	transition:    var(--transition-std);
+}
+
+.card:hover {
+	border-left:  3px solid var(--accent-blue);
+	border-color: var(--accent-blue);
+	box-shadow:   none;
+}
+
+/* ── Button primitives ─────────────────────────────────────── */
+.btn {
+	display:         inline-flex;
+	align-items:     center;
+	gap:             0.5rem;
+	padding:         0.75rem 1.75rem;
+	border-radius:   10px;
+	font-family:     var(--font-heading);
+	font-weight:     700;
+	font-size:       0.9rem;
+	letter-spacing:  -0.01em;
+	cursor:          pointer;
+	border:          none;
+	text-decoration: none;
+	transition:      var(--transition-std);
+	white-space:     nowrap;
+}
+
+.btn-primary {
+	background: #0052FF;
+	color:      #ffffff;
+	/* No glow on idle — only appears on hover */
+	box-shadow: none;
+}
+
+.btn-primary:hover {
+	background:      #0066FF;
+	box-shadow:      none;
+	transform:       translateY(-1px);
+	text-decoration: none;
+	color:           #ffffff;
+}
+
+.btn-secondary {
+	background:  transparent;
+	color:       var(--text-primary);
+	border:      1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:hover {
+	border-color:    #00C2FF;
+	color:           var(--accent-blue-hi);
+	transform:       translateY(-1px);
+	text-decoration: none;
+}
+
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
