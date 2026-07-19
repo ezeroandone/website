@@ -25,3 +25,6 @@ Thumbs.db
 
 # ── Snapshots (local-only diffing tool) ─────────────────────
 .snapshots/
+
+# ── Kiro IDE workspace files ─────────────────────────────────
+.kiro/
