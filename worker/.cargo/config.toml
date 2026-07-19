@@ -1,9 +1,9 @@
 [build]
 target = "wasm32-unknown-unknown"
 
-# Keep build artifacts outside the OneDrive folder to avoid sync overhead
-# and disk pressure. Override per-machine with CARGO_TARGET_DIR env var.
-target-dir = "C:\\cargo-target-ezo"
+# target-dir is intentionally not set here — use CARGO_TARGET_DIR env var
+# locally if you want to keep artifacts outside OneDrive.
+# e.g. add to your PowerShell profile: $env:CARGO_TARGET_DIR = "C:\cargo-target-ezo"
 
 [target.wasm32-unknown-unknown]
 rustflags = ["--cfg", "getrandom_backend=\"wasm_js\""]
