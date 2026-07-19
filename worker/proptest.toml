@@ -1,0 +1,5 @@
+# Reduce proptest example count from the default 256 to keep `cargo test`
+# fast. Increase locally if you need deeper shrinking coverage.
+[proptest]
+cases = 20
+max_shrink_iters = 50

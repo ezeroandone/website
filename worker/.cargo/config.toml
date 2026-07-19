@@ -1,0 +1,14 @@
+[build]
+target = "wasm32-unknown-unknown"
+
+# Keep build artifacts outside the OneDrive folder to avoid sync overhead
+# and disk pressure. Override per-machine with CARGO_TARGET_DIR env var.
+target-dir = "C:\\cargo-target-ezo"
+
+[target.wasm32-unknown-unknown]
+rustflags = ["--cfg", "getrandom_backend=\"wasm_js\""]
+
+# `cargo t` runs the unit/property test suite on the native host target
+# (wasm binaries cannot execute directly on Windows).
+[alias]
+t = "test --lib --target x86_64-pc-windows-msvc"
