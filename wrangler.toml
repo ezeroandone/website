@@ -1,6 +1,7 @@
 name                = "ezeroandone-api"
-main                = "build/worker/worker.js"
+main                = "build/worker/worker_bg.js"
 compatibility_date  = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding       = "DB"
