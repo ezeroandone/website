@@ -13,21 +13,26 @@
 		{ href: '/team',         label: 'Team'         },
 	];
 
-	const capabilities = [
+	const pillars = [
 		{
-			icon: 'deployed_code',
-			title: 'Full-Stack Web Architecture',
-			body: 'High-speed user interfaces paired with ultra-low latency server layers built on modern, lightweight runtimes.',
+			icon: 'layers',
+			title: 'Digital Architecture',
+			body: 'High-speed web applications, custom enterprise platforms, and secure API gateways built on lightweight edge runtimes.'
 		},
 		{
-			icon: 'hub',
-			title: 'API & Ecosystem Integration',
-			body: 'Secure, resilient gateway bridges connecting custom platforms to corporate database registries, travel inventories, and global financial networks.',
+			icon: 'insights',
+			title: 'Strategic IT Consultancy',
+			body: 'First-principles technology auditing, infrastructure optimisation, and rigorous corporate cybersecurity compliance frameworks.'
 		},
 		{
-			icon: 'lan',
-			title: 'Edge & Infrastructure Configuration',
-			body: 'Hardened data routing pipelines, cryptographic access policies, and optimized global caching to guarantee maximum uptime.',
+			icon: 'router',
+			title: 'Hardware & Networks',
+			body: 'Fault-tolerant network mapping, managed routing, data centre installations, and secure physical access control terminals.'
+		},
+		{
+			icon: 'wb_sunny',
+			title: 'Renewable Energy',
+			body: 'Commercial solar PV arrays, industrial smart battery matrices, and telemetry-driven energy efficiency automation loops.'
 		},
 	];
 </script>
@@ -43,16 +48,14 @@
 		<a href="/" class="brand" aria-label="eZeroAndOne home">
 			e<span class="brand-accent">0</span>&amp;<span class="brand-accent">1</span>
 		</a>
-
 		<ul class="nav-links" role="list">
 			{#each navLinks as link}
 				<li><a href={link.href}>{link.label}</a></li>
 			{/each}
 		</ul>
-
 		<div class="nav-actions">
 			<a href="/auth/login" class="btn btn-secondary nav-signin">
-				<span class="icon" aria-hidden="true">lock</span>
+				<span class="material-symbols-outlined" aria-hidden="true">lock</span>
 				Staff Portal
 			</a>
 			<a href="/capabilities" class="btn btn-primary nav-cta">
@@ -62,132 +65,115 @@
 	</nav>
 </FloatingHeader>
 
-<!-- ══ HERO — 100vh ══════════════════════════════════════════ -->
+<!-- ══ SECTION 1: HERO ═══════════════════════════════════════ -->
 <section class="hero section-constrained" aria-labelledby="hero-h1">
 	<div class="inner hero-inner">
 		<p class="eyebrow">
-			<span class="icon eyebrow-icon" aria-hidden="true">bolt</span>
+			<span class="material-symbols-outlined eyebrow-icon" aria-hidden="true">bolt</span>
 			Cloudflare-native · First principles engineering
 		</p>
-
 		<h1 id="hero-h1" class="hero-h1">
 			We Deconstruct Complexity.<br />
-			<span class="hero-h1-accent">You Create the Possibilities.</span>
+			<span class="hero-h1-accent">You Create Possibilities.</span>
 		</h1>
-
 		<p class="hero-sub">
 			At the foundation of every groundbreaking digital platform is a stream of electrons, zeros,
 			and ones. We break complex business challenges down into simple, modular parts to build
 			scalable software ecosystems that stand the test of time.
 		</p>
-
 		<div class="hero-ctas">
-			<a href="/capabilities" class="btn btn-primary hero-cta-primary">
-				<span class="icon" aria-hidden="true">rocket_launch</span>
+			<a href="/capabilities" class="btn btn-primary">
 				Initialize Project
 			</a>
-			<a href="/capabilities" class="btn btn-secondary hero-cta-secondary">
-				<span class="icon" aria-hidden="true">menu_book</span>
-				Our Capabilities
+			<a href="#philosophy" class="btn btn-secondary">
+				Our Philosophy
 			</a>
 		</div>
-
 		{#if data.openRoles > 0}
 			<a href="/careers" class="live-badge">
 				<span class="live-dot" aria-hidden="true"></span>
 				{data.openRoles} active {data.openRoles === 1 ? 'operation' : 'operations'} open
-				<span class="icon live-arrow" aria-hidden="true">arrow_forward</span>
+				<span class="material-symbols-outlined live-arrow" aria-hidden="true">arrow_forward</span>
 			</a>
 		{/if}
 	</div>
 </section>
 
-<!-- ══ PHILOSOPHY — 100vh ════════════════════════════════════ -->
-<section class="philosophy section-constrained" aria-labelledby="phil-h2">
+<!-- ══ SECTION 2: CORE PHILOSOPHY ════════════════════════════ -->
+<section id="philosophy" class="philosophy section-constrained" aria-labelledby="phil-h2">
 	<div class="inner phil-inner">
-		<div class="phil-label">
-			<span class="icon" aria-hidden="true">psychology</span>
-			Core Philosophy
+		<div class="phil-grid">
+			<div class="phil-left">
+				<span class="section-eyebrow">// Baseline Ideation</span>
+				<h2 id="phil-h2" class="phil-h2">
+					From First Principles<br />to Infinite Solutions.
+				</h2>
+			</div>
+			<div class="phil-right">
+				<p>
+					We don't believe in quick fixes or fragile code layers. True digital transformation
+					requires going back to the basics — the absolute foundation.
+				</p>
+				<p>
+					By treating complex enterprise problems as a modular collection of simple blocks, we
+					eliminate technical debt before it even begins. We build flexible architectures that
+					unlock the spectrum of infinite possibilities lying between 0 and 1.
+				</p>
+				<a href="/capabilities" class="phil-link">
+					Explore our methodology
+					<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+				</a>
+			</div>
 		</div>
-		<h2 id="phil-h2" class="phil-h2">
-			From First Principles<br />to Infinite Solutions.
-		</h2>
-		<div class="phil-columns">
-			<p>
-				We don't believe in quick fixes or fragile code. True digital transformation requires
-				going back to the basics — the absolute foundation.
-			</p>
-			<p>
-				By treating complex software problems as a collection of simple, accessible blocks, we
-				eliminate technical debt before it starts. We build flexible architectures that unlock
-				the spectrum of infinite possibilities lying between 0 and 1.
-			</p>
-		</div>
-		<a href="/capabilities" class="phil-link">
-			Explore our methodology
-			<span class="icon" aria-hidden="true">arrow_forward</span>
-		</a>
 	</div>
 </section>
 
-<!-- ══ CAPABILITIES PREVIEW — 100vh ═════════════════════════ -->
-<section class="cap-section section-constrained" aria-labelledby="cap-h2">
+<!-- ══ SECTION 3: FOUR CORE VERTICALS ═══════════════════════ -->
+<section class="pillars section-constrained" aria-labelledby="pillars-h2">
 	<div class="inner">
 		<div class="section-header">
 			<div>
-				<p class="section-eyebrow">
-					<span class="icon" aria-hidden="true">deployed_code</span>
-					Architectural Capabilities
-				</p>
-				<h2 id="cap-h2" class="section-h2">
-					Modular solutions designed for<br />absolute performance at scale.
-				</h2>
+				<span class="section-eyebrow">// Scope of Operations</span>
+				<h2 id="pillars-h2" class="section-h2">Structural Core Verticals</h2>
 			</div>
 			<a href="/capabilities" class="section-more">
 				All capabilities
-				<span class="icon" aria-hidden="true">arrow_forward</span>
+				<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
 			</a>
 		</div>
-
-		<div class="cap-grid">
-			{#each capabilities as cap, i}
-				<GlassCard accentColor="blue">
-					<div class="cap-card">
-						<span class="icon cap-icon" aria-hidden="true">{cap.icon}</span>
-						<h3 class="cap-title">{cap.title}</h3>
-						<p class="cap-body">{cap.body}</p>
-						<a href="/capabilities" class="cap-more">
-							Learn more
-							<span class="icon" aria-hidden="true">chevron_right</span>
-						</a>
-					</div>
-				</GlassCard>
+		<div class="pillars-grid">
+			{#each pillars as pillar}
+				<div class="interactive-card pillar-card">
+					<span class="material-symbols-outlined pillar-icon" aria-hidden="true">{pillar.icon}</span>
+					<h3 class="pillar-title">{pillar.title}</h3>
+					<p class="pillar-body">{pillar.body}</p>
+				</div>
 			{/each}
 		</div>
 	</div>
 </section>
 
-<!-- ══ WORK PREVIEW — 100vh ══════════════════════════════════ -->
+<!-- ══ WORK PREVIEW ═══════════════════════════════════════════ -->
 {#if data.work.length > 0}
 <section class="content-section section-constrained" aria-labelledby="work-h2">
 	<div class="inner">
 		<div class="section-header">
 			<div>
 				<p class="section-eyebrow">
-					<span class="icon" aria-hidden="true">workspace_premium</span>
+					<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
 					Built Legacies
 				</p>
 				<h2 id="work-h2" class="section-h2">Proven engineering in production.</h2>
 			</div>
 			<a href="/work" class="section-more">
-				All projects <span class="icon" aria-hidden="true">arrow_forward</span>
+				All projects <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
 			</a>
 		</div>
 		<div class="cards-grid">
 			{#each data.work as post}
-				<GlassCard accentColor="green">
+				<GlassCard accentColor="blue">
 					<a href="/work/{post.slug}" class="card-link">
-						<span class="icon card-type-icon" aria-hidden="true">folder_open</span>
+						<span class="material-symbols-outlined card-type-icon" aria-hidden="true">folder_open</span>
 						<h3>{post.title}</h3>
 						<p>{post.summary}</p>
 					</a>
@@ -198,32 +184,32 @@
 </section>
 {/if}
 
-<!-- ══ INSIGHTS PREVIEW — 100vh ═════════════════════════════ -->
+<!-- ══ INSIGHTS PREVIEW ═══════════════════════════════════════ -->
 {#if data.insights.length > 0}
 <section class="content-section section-constrained" aria-labelledby="ins-h2">
 	<div class="inner">
 		<div class="section-header">
 			<div>
 				<p class="section-eyebrow">
-					<span class="icon" aria-hidden="true">terminal</span>
+					<span class="material-symbols-outlined" aria-hidden="true">terminal</span>
 					Technical Musings
 				</p>
 				<h2 id="ins-h2" class="section-h2">Deep dives from the engine room.</h2>
 			</div>
 			<a href="/insights" class="section-more">
-				All insights <span class="icon" aria-hidden="true">arrow_forward</span>
+				All insights <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
 			</a>
 		</div>
 		<div class="cards-grid">
 			{#each data.insights as post}
 				<GlassCard accentColor="blue">
 					<a href="/insights/{post.slug}" class="card-link">
-						<span class="icon card-type-icon" aria-hidden="true">article</span>
+						<span class="material-symbols-outlined card-type-icon" aria-hidden="true">article</span>
 						<h3>{post.title}</h3>
 						<p>{post.summary}</p>
 						{#if post.author}
 							<span class="card-author">
-								<span class="icon" aria-hidden="true">person</span>
+								<span class="material-symbols-outlined" aria-hidden="true">person</span>
 								{post.author.name}
 							</span>
 						{/if}
@@ -235,33 +221,47 @@
 </section>
 {/if}
 
-<!-- ══ CAREERS CTA — 100vh ════════════════════════════════════ -->
-<section class="cta-section section-constrained" aria-labelledby="cta-h2">
-	<div class="inner cta-inner">
-		<div class="cta-label">
-			<span class="icon" aria-hidden="true">radio_button_checked</span>
-			Active Operations
+<!-- ══ SECTION 4: CONVERSION INTAKE ══════════════════════════ -->
+<section class="intake section-constrained" aria-labelledby="intake-h2">
+	<div class="inner">
+		<div class="intake-grid">
+			<div class="intake-left">
+				<span class="section-eyebrow">// Project Initialisation</span>
+				<h2 id="intake-h2" class="intake-h2">
+					Let's Build Something<br />That Lasts.
+				</h2>
+				<p class="intake-sub">
+					Ready to turn your complex ideas into clean, executable, long-term code?
+					Let's start from the foundation and build your digital legacy together.
+				</p>
+			</div>
+			<div class="intake-form-wrap">
+				<form class="intake-form" method="POST" action="/contact">
+					<div class="form-row">
+						<div class="form-field">
+							<label for="contact-name">Name</label>
+							<input id="contact-name" type="text" name="name" placeholder="Jane Smith" autocomplete="name" />
+						</div>
+						<div class="form-field">
+							<label for="contact-email">Corporate Email</label>
+							<input id="contact-email" type="email" name="email" placeholder="jane@company.com" autocomplete="email" />
+						</div>
+					</div>
+					<div class="form-field">
+						<label for="contact-message">The complex problem you need solved</label>
+						<textarea id="contact-message" name="message" rows="4" placeholder="Describe your infrastructure challenge, product vision, or technical bottleneck…"></textarea>
+					</div>
+					<button type="submit" class="btn btn-primary intake-submit">
+						Initialize Project
+					</button>
+				</form>
+			</div>
 		</div>
-		<h2 id="cta-h2" class="cta-h2">
-			Join the core team<br />building lasting systems.
-		</h2>
-		<p class="cta-body">
-			We're building at the edge of the network. If you're obsessed with performance,
-			correctness, and shipping software engineered to stand the test of time — we want to talk.
-		</p>
-		<a href="/careers" class="btn btn-primary cta-btn">
-			<span class="icon" aria-hidden="true">open_in_new</span>
-			{#if data.openRoles > 0}
-				View {data.openRoles} open {data.openRoles === 1 ? 'role' : 'roles'}
-			{:else}
-				See open roles
-			{/if}
-		</a>
 	</div>
 </section>
 
-<!-- ══ FOOTER — 4-column ══════════════════════════════════════ -->
-<footer class="site-footer">
+<!-- ══ FOOTER ════════════════════════════════════════════════ -->
+<footer class="site-footer" aria-label="Site footer">
 	<div class="inner footer-grid">
 
 		<!-- Col 1: Identity -->
@@ -272,57 +272,57 @@
 			<p class="footer-bio">Engineered from the baseline.<br />Built for legacy.</p>
 			<div class="footer-social">
 				<a href="https://github.com" aria-label="GitHub" rel="noopener noreferrer" target="_blank">
-					<span class="icon">code</span>
+					<span class="material-symbols-outlined">code</span>
 				</a>
 				<a href="https://linkedin.com" aria-label="LinkedIn" rel="noopener noreferrer" target="_blank">
-					<span class="icon">corporate_fare</span>
+					<span class="material-symbols-outlined">corporate_fare</span>
 				</a>
 			</div>
 		</div>
 
-		<!-- Col 2: Platforms -->
-		<nav class="footer-col" aria-label="Platform links">
-			<h3 class="footer-col-title">Platforms</h3>
+		<!-- Col 2: Core Pillars -->
+		<nav class="footer-col" aria-label="Core pillar links">
+			<h3 class="footer-col-title">Core Pillars</h3>
 			<ul role="list">
-				<li><a href="/capabilities"><span class="icon" aria-hidden="true">deployed_code</span>Capabilities</a></li>
-				<li><a href="/work"><span class="icon" aria-hidden="true">workspace_premium</span>Work</a></li>
-				<li><a href="/insights"><span class="icon" aria-hidden="true">terminal</span>Insights</a></li>
-				<li><a href="/careers"><span class="icon" aria-hidden="true">radio_button_checked</span>Careers</a></li>
-				<li><a href="/team"><span class="icon" aria-hidden="true">groups</span>Team</a></li>
+				<li><a href="/capabilities"><span class="material-symbols-outlined" aria-hidden="true">deployed_code</span>Capabilities</a></li>
+				<li><a href="/work"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>Case Studies</a></li>
+				<li><a href="/insights"><span class="material-symbols-outlined" aria-hidden="true">terminal</span>Technical Insights</a></li>
+				<li><a href="/careers"><span class="material-symbols-outlined" aria-hidden="true">radio_button_checked</span>Active Careers</a></li>
 			</ul>
 		</nav>
 
-		<!-- Col 3: Security -->
+		<!-- Col 3: Trust Nodes -->
 		<nav class="footer-col" aria-label="Security and trust links">
-			<h3 class="footer-col-title">Security &amp; Trust</h3>
+			<h3 class="footer-col-title">Trust Nodes</h3>
 			<ul role="list">
-				<li><a href="/verify"><span class="icon" aria-hidden="true">qr_code_scanner</span>Verification Portal</a></li>
-				<li><a href="/status"><span class="icon" aria-hidden="true">monitor_heart</span>Status Engine</a></li>
-				<li><a href="/security"><span class="icon" aria-hidden="true">shield</span>Documentation Registry</a></li>
-				<li><a href="/privacy"><span class="icon" aria-hidden="true">policy</span>Privacy Policy</a></li>
-				<li><a href="/terms"><span class="icon" aria-hidden="true">gavel</span>Terms of Service</a></li>
+				<li><a href="/team"><span class="material-symbols-outlined" aria-hidden="true">groups</span>The Engineers</a></li>
+				<li><a href="/verify"><span class="material-symbols-outlined" aria-hidden="true">qr_code_scanner</span>Identity Verification</a></li>
+				<li><a href="/security"><span class="material-symbols-outlined" aria-hidden="true">shield</span>Security Docs</a></li>
+				<li><a href="/status" class="footer-status-link">
+					<span class="status-dot" aria-hidden="true"></span>Edge Status Operational
+				</a></li>
 			</ul>
 		</nav>
 
-		<!-- Col 4: Contact -->
+		<!-- Col 4: Access Gateways -->
 		<div class="footer-col">
-			<h3 class="footer-col-title">Contact &amp; Access</h3>
+			<h3 class="footer-col-title">Access Gateways</h3>
 			<ul role="list">
 				<li>
 					<a href="/auth/login" class="footer-cta-link">
-						<span class="icon" aria-hidden="true">lock</span>
-						Staff Portal Login
+						<span class="material-symbols-outlined" aria-hidden="true">lock</span>
+						Secure Staff Portal
 					</a>
 				</li>
 				<li>
 					<a href="mailto:hello@ezeroandone.io" class="footer-cta-link">
-						<span class="icon" aria-hidden="true">mail</span>
+						<span class="material-symbols-outlined" aria-hidden="true">mail</span>
 						hello@ezeroandone.io
 					</a>
 				</li>
 				<li>
 					<a href="/capabilities" class="footer-cta-link footer-cta-link--primary">
-						<span class="icon" aria-hidden="true">rocket_launch</span>
+						<span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
 						Initialize a Project
 					</a>
 				</li>
@@ -331,20 +331,11 @@
 
 	</div>
 
-	<!-- Bottom bar -->
+	<!-- Bottom strip -->
 	<div class="footer-bottom">
 		<div class="inner footer-bottom-inner">
-			<p>eZeroAndOne © 2026. All rights reserved. Strict cryptographic access control enforced.</p>
-			<div class="footer-bottom-badges">
-				<span class="badge-secure">
-					<span class="icon" aria-hidden="true">verified_user</span>
-					Cryptographic Access Control
-				</span>
-				<span class="badge-secure">
-					<span class="icon" aria-hidden="true">cloud_done</span>
-					Cloudflare Edge Infrastructure
-				</span>
-			</div>
+			<p>eZeroAndOne &copy; 2026. All rights reserved.</p>
+			<p class="footer-bottom-mono">Strict cryptographic access control enforced.</p>
 		</div>
 	</div>
 </footer>
@@ -368,30 +359,23 @@
 		font-weight: 500; text-decoration: none; letter-spacing: 0.02em;
 		transition: color 0.2s ease;
 	}
-	.nav-links a:hover,
-	.nav-links a[aria-current="page"] { color: #fff; text-decoration: none; }
+	.nav-links a:hover, .nav-links a[aria-current="page"] { color: #fff; text-decoration: none; }
 	.nav-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
-	.nav-signin { padding: 0.45rem 1rem; font-size: 0.825rem; }
-	.nav-cta    { padding: 0.45rem 1.25rem; font-size: 0.825rem; }
+	.nav-signin { padding: 0.45rem 1rem; font-size: 0.75rem; }
+	.nav-cta    { padding: 0.45rem 1.25rem; font-size: 0.75rem; }
 
-	/* ── Shared section structure ─────────────────────── */
-	.section-constrained {
-		padding: 8rem 0;
-	}
+	/* ── Shared section tokens ───────────────────────── */
+	.section-constrained { padding: 8rem 0; }
 	.section-header {
 		display: flex; justify-content: space-between; align-items: flex-end;
 		margin-bottom: 3rem; gap: 2rem; flex-wrap: wrap;
 	}
 	.section-eyebrow {
-		display: flex; align-items: center; gap: 0.4rem;
-		font-family: var(--font-heading); font-size: 0.7rem; font-weight: 700;
-		text-transform: uppercase; letter-spacing: 0.12em;
-		color: var(--accent-blue-hi); margin: 0 0 0.75rem;
+		display: block; font-family: var(--font-heading); font-size: 0.7rem;
+		font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+		color: var(--accent-blue); margin-bottom: 0.75rem;
 	}
-	.section-h2 {
-		font-size: clamp(1.5rem, 2.75vw, 2.25rem); font-weight: 800;
-		color: #fff; margin: 0;
-	}
+	.section-h2 { font-size: clamp(1.5rem, 2.75vw, 2.25rem); font-weight: 800; color: #fff; margin: 0; }
 	.section-more {
 		display: inline-flex; align-items: center; gap: 0.3rem;
 		font-family: var(--font-heading); font-size: 0.8rem; font-weight: 600;
@@ -401,41 +385,29 @@
 	.section-more:hover { gap: 0.6rem; text-decoration: none; }
 
 	/* ── Hero ─────────────────────────────────────────── */
-	.hero {
-		text-align: center;
-		/* Override section-constrained: use min-height so content never clips */
-		min-height: 100svh;
-		height: auto;
-		overflow: visible;
-		padding: 6rem 2rem;
-	}
+	.hero { text-align: center; min-height: 100svh; height: auto; overflow: visible; padding: 6rem 2rem; }
 	.hero-inner { max-width: 860px; }
 	.eyebrow {
 		display: inline-flex; align-items: center; gap: 0.4rem;
 		font-family: var(--font-heading); font-size: 0.7rem; font-weight: 700;
-		text-transform: uppercase; letter-spacing: 0.12em;
-		color: var(--accent-blue-hi); margin: 0 0 1.5rem;
-		border: 1px solid rgba(0, 194, 255, 0.25);
+		text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-blue-hi);
+		margin: 0 0 1.5rem; border: 1px solid rgba(0, 194, 255, 0.25);
 		border-radius: 100px; padding: 0.3rem 0.9rem;
 	}
 	.eyebrow-icon { font-size: 14px; }
 	.hero-h1 {
-		font-size: clamp(3rem, 8vw, 6.5rem); font-weight: 800;
-		letter-spacing: -0.05em; line-height: 1.0;
-		color: #fff; margin: 0 0 1.75rem;
+		font-size: clamp(3rem, 8vw, 6.5rem); font-weight: 800; letter-spacing: -0.05em;
+		line-height: 1.0; color: #fff; margin: 0 0 1.75rem;
 	}
 	.hero-h1-accent {
 		background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-blue-hi) 100%);
 		-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 	}
 	.hero-sub {
-		font-family: var(--font-body); font-size: clamp(1rem, 2vw, 1.2rem);
-		line-height: 1.75; color: var(--text-secondary);
-		max-width: 640px; margin: 0 auto 2.5rem;
+		font-family: var(--font-body); font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.75;
+		color: var(--text-secondary); max-width: 640px; margin: 0 auto 2.5rem;
 	}
 	.hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-	.hero-cta-primary  { padding: 0.85rem 2.25rem; font-size: 0.95rem; }
-	.hero-cta-secondary { padding: 0.85rem 2.25rem; font-size: 0.95rem; }
 	.live-badge {
 		display: inline-flex; align-items: center; gap: 0.5rem;
 		font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
@@ -453,58 +425,47 @@
 
 	/* ── Philosophy ───────────────────────────────────── */
 	.philosophy { background: var(--bg-surface); }
-	.phil-inner { max-width: 900px; }
-	.phil-label {
-		display: inline-flex; align-items: center; gap: 0.4rem;
-		font-family: var(--font-heading); font-size: 0.7rem; font-weight: 700;
-		text-transform: uppercase; letter-spacing: 0.12em;
-		color: var(--accent-blue-hi); margin-bottom: 1.5rem;
+	.phil-inner { max-width: 1100px; }
+	.phil-grid {
+		display: grid; grid-template-columns: 5fr 7fr; gap: 6rem; align-items: center;
+		border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0;
 	}
 	.phil-h2 {
 		font-size: clamp(2rem, 4.5vw, 3.5rem); font-weight: 800;
-		letter-spacing: -0.03em; color: #fff; margin: 0 0 2.5rem;
+		letter-spacing: -0.03em; color: #fff; margin: 0;
 	}
-	.phil-columns {
-		display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 2.5rem;
+	.phil-right {
+		border-left: 1px solid rgba(255,255,255,0.08); padding-left: 4rem;
+		display: flex; flex-direction: column; gap: 1.5rem;
 	}
-	.phil-columns p {
-		font-family: var(--font-body); font-size: 1.05rem; line-height: 1.8; color: var(--text-secondary);
+	.phil-right p {
+		font-family: var(--font-body); font-size: 1.05rem; line-height: 1.8;
+		color: var(--text-secondary); margin: 0;
 	}
 	.phil-link {
 		display: inline-flex; align-items: center; gap: 0.4rem;
 		font-family: var(--font-heading); font-size: 0.875rem; font-weight: 700;
-		color: var(--accent-blue-hi); text-decoration: none;
-		transition: gap 0.2s ease;
+		color: var(--accent-blue-hi); text-decoration: none; transition: gap 0.2s ease;
 	}
 	.phil-link:hover { gap: 0.7rem; text-decoration: none; }
 
-	/* ── Capabilities grid ────────────────────────────── */
-	.cap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-	.cap-card { padding: 2rem; display: flex; flex-direction: column; gap: 1rem; height: 100%; }
-	.cap-icon {
-		font-size: 28px; color: var(--accent-blue-hi);
-		transition: transform 0.3s var(--ease-out-expo);
-	}
-	:global(.glass-card:hover) .cap-icon { transform: scale(1.15); }
-	.cap-title {
-		font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
+	/* ── Four pillars ─────────────────────────────────── */
+	.pillars { background: var(--bg-base); }
+	.pillars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+	.pillar-card { display: flex; flex-direction: column; gap: 1rem; height: 100%; }
+	.pillar-icon { font-size: 28px; color: var(--accent-blue); }
+	.pillar-title {
+		font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700;
 		color: #fff; letter-spacing: -0.02em; margin: 0;
 	}
-	.cap-body {
-		font-family: var(--font-body); font-size: 0.9rem; line-height: 1.7;
+	.pillar-body {
+		font-family: var(--font-body); font-size: 0.875rem; line-height: 1.7;
 		color: var(--text-secondary); margin: 0; flex: 1;
 	}
-	.cap-more {
-		display: inline-flex; align-items: center; gap: 0.25rem;
-		font-family: var(--font-heading); font-size: 0.78rem; font-weight: 700;
-		color: var(--accent-blue-hi); text-decoration: none;
-		transition: gap 0.2s ease;
-	}
-	.cap-more:hover { gap: 0.5rem; text-decoration: none; }
 
-	/* ── Content cards ────────────────────────────────── */
+	/* ── Content card sections ────────────────────────── */
 	.content-section { background: var(--bg-surface); }
-	.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.5rem; }
+	.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
 	.card-link {
 		display: flex; flex-direction: column; gap: 0.75rem;
 		padding: 2rem; text-decoration: none; color: inherit; height: 100%;
@@ -524,29 +485,36 @@
 		font-size: 0.75rem; color: var(--text-muted); margin-top: auto;
 	}
 
-	/* ── CTA section ──────────────────────────────────── */
-	.cta-section { text-align: center; }
-	.cta-inner { max-width: 680px; }
-	.cta-label {
-		display: inline-flex; align-items: center; gap: 0.4rem;
-		font-family: var(--font-heading); font-size: 0.7rem; font-weight: 700;
-		text-transform: uppercase; letter-spacing: 0.12em;
-		color: var(--accent-green); margin-bottom: 1.5rem;
+	/* ── Intake (contact) section ─────────────────────── */
+	.intake { background: var(--bg-base); }
+	.intake-grid {
+		display: grid; grid-template-columns: 5fr 7fr; gap: 6rem; align-items: center;
 	}
-	.cta-h2 {
+	.intake-h2 {
 		font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 800;
-		letter-spacing: -0.03em; color: #fff; margin: 0 0 1.5rem;
+		letter-spacing: -0.03em; color: #fff; margin: 0 0 1.25rem;
 	}
-	.cta-body {
-		font-family: var(--font-body); font-size: 1.05rem; line-height: 1.8;
-		color: var(--text-secondary); margin: 0 0 2.5rem;
+	.intake-sub {
+		font-family: var(--font-body); font-size: 1rem; line-height: 1.8;
+		color: var(--text-secondary); margin: 0;
 	}
-	.cta-btn { padding: 1rem 2.5rem; font-size: 1rem; }
+	.intake-form-wrap {
+		background: #050505; border: 1px solid rgba(255,255,255,0.05);
+		padding: 3rem;
+	}
+	.intake-form { display: flex; flex-direction: column; gap: 1.5rem; }
+	.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+	.form-field { display: flex; flex-direction: column; gap: 0.5rem; }
+	.form-field label {
+		font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
+		text-transform: uppercase; letter-spacing: 0.1em; color: #fff;
+	}
+	.intake-submit { align-self: flex-start; }
 
 	/* ── Footer ───────────────────────────────────────── */
 	.site-footer {
-		background: var(--bg-base); border-top: 1px solid rgba(255, 255, 255, 0.08);
-		padding-top: 7rem;
+		background: var(--bg-base); border-top: 1px solid rgba(255, 255, 255, 0.05);
+		padding-top: 6rem;
 	}
 	.footer-grid {
 		display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr;
@@ -565,11 +533,10 @@
 	.footer-social { display: flex; gap: 0.75rem; }
 	.footer-social a {
 		display: flex; align-items: center; justify-content: center;
-		width: 36px; height: 36px; border-radius: 8px;
-		border: 1px solid var(--glass-border); color: var(--text-secondary);
-		text-decoration: none; transition: var(--transition-std);
+		width: 36px; height: 36px; border: 1px solid var(--glass-border);
+		color: var(--text-secondary); text-decoration: none; transition: var(--transition-std);
 	}
-	.footer-social a:hover { border-color: var(--accent-blue); color: var(--accent-blue-hi); transform: scale(1.08); }
+	.footer-social a:hover { border-color: var(--accent-blue); color: var(--accent-blue-hi); }
 	.footer-col-title {
 		font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
 		text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
@@ -582,46 +549,41 @@
 		text-decoration: none; transition: color 0.2s ease;
 	}
 	.footer-col a:hover { color: #fff; text-decoration: none; }
-	.footer-col a .icon { font-size: 16px; color: var(--text-muted); }
-	.footer-cta-link--primary {
-		color: var(--accent-blue-hi) !important; font-weight: 600;
+	.footer-col a .material-symbols-outlined { font-size: 16px; color: var(--text-muted); }
+	.footer-cta-link--primary { color: var(--accent-blue-hi) !important; font-weight: 600; }
+	.footer-status-link { cursor: default; }
+	.status-dot {
+		display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+		background: var(--accent-green); animation: pulse 2s ease-in-out infinite;
 	}
-	.footer-cta-link--primary .icon { color: var(--accent-blue-hi) !important; }
-
-	/* Footer bottom bar */
-	.footer-bottom {
-		border-top: 1px solid var(--glass-border);
-		padding: 1.25rem 0;
-	}
+	.footer-bottom { border-top: 1px solid var(--glass-border); padding: 1.25rem 0; }
 	.footer-bottom-inner {
-		display: flex; align-items: center; justify-content: space-between;
-		flex-wrap: wrap; gap: 1rem;
+		display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
 	}
-	.footer-bottom p {
+	.footer-bottom-inner p {
 		font-family: var(--font-body); font-size: 0.75rem; color: var(--text-muted); margin: 0;
 	}
-	.footer-bottom-badges { display: flex; gap: 1rem; flex-wrap: wrap; }
-	.badge-secure {
-		display: inline-flex; align-items: center; gap: 0.35rem;
-		font-family: var(--font-heading); font-size: 0.62rem; font-weight: 700;
-		text-transform: uppercase; letter-spacing: 0.08em;
-		color: var(--text-muted); border: 1px solid var(--glass-border);
-		border-radius: 100px; padding: 0.2rem 0.65rem;
+	.footer-bottom-mono {
+		font-family: var(--font-heading); font-size: 0.6rem !important;
+		text-transform: uppercase; letter-spacing: 0.1em;
 	}
-	.badge-secure .icon { font-size: 12px; }
 
 	/* ── Responsive ───────────────────────────────────── */
-	@media (max-width: 1024px) {
-		.cap-grid { grid-template-columns: 1fr 1fr; }
-		.footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
-		.phil-columns { grid-template-columns: 1fr; }
+	@media (max-width: 1100px) {
+		.pillars-grid { grid-template-columns: 1fr 1fr; }
+		.footer-grid  { grid-template-columns: 1fr 1fr; gap: 2rem; }
+		.phil-grid    { grid-template-columns: 1fr; gap: 3rem; }
+		.phil-right   { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 2rem; }
+		.intake-grid  { grid-template-columns: 1fr; gap: 3rem; }
 	}
 	@media (max-width: 640px) {
-		.nav-links { display: none; }
+		.nav-links            { display: none; }
 		.nav-actions .nav-signin { display: none; }
-		.cap-grid { grid-template-columns: 1fr; }
-		.footer-grid { grid-template-columns: 1fr; }
-		.footer-bottom-inner { flex-direction: column; align-items: flex-start; }
-		.hero-ctas { flex-direction: column; align-items: center; }
+		.pillars-grid         { grid-template-columns: 1fr; }
+		.footer-grid          { grid-template-columns: 1fr; }
+		.footer-bottom-inner  { flex-direction: column; align-items: flex-start; }
+		.hero-ctas            { flex-direction: column; align-items: center; }
+		.form-row             { grid-template-columns: 1fr; }
+		.intake-form-wrap     { padding: 1.75rem; }
 	}
 </style>

@@ -166,25 +166,29 @@ p { font-family: var(--font-body); line-height: 1.7; margin: 0; }
 }
 
 /* ── Liquid glass surface ──────────────────────────────────── */
-.glass {
-	background:                var(--glass-bg);
-	backdrop-filter:           blur(var(--glass-blur));
-	-webkit-backdrop-filter:   blur(var(--glass-blur));
-	border:                    1px solid var(--glass-border);
+.glass,
+.liquid-glass {
+	background:                rgba(0, 0, 0, 0.75);
+	backdrop-filter:           blur(12px) saturate(140%);
+	-webkit-backdrop-filter:   blur(12px) saturate(140%);
+	border:                    1px solid rgba(255, 255, 255, 0.10);
+	transition:                all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Premium card ──────────────────────────────────────────── */
-.card {
-	background:    var(--bg-card);
-	border:        1px solid var(--glass-border);
-	border-radius: 16px;
-	transition:    var(--transition-std);
+.card,
+.interactive-card {
+	background:  var(--bg-card);
+	border:      1px solid rgba(255, 255, 255, 0.10);
+	padding:     2rem;
+	transition:  all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.card:hover {
-	border-left:  3px solid var(--accent-blue);
+.card:hover,
+.interactive-card:hover {
 	border-color: var(--accent-blue);
-	box-shadow:   none;
+	transform:    translateY(-4px);
+	box-shadow:   0 10px 30px -10px rgba(0, 82, 255, 0.2);
 }
 
 /* ── Button primitives ─────────────────────────────────────── */
@@ -193,7 +197,6 @@ p { font-family: var(--font-body); line-height: 1.7; margin: 0; }
 	align-items:     center;
 	gap:             0.5rem;
 	padding:         0.75rem 1.75rem;
-	border-radius:   10px;
 	font-family:     var(--font-heading);
 	font-weight:     700;
 	font-size:       0.9rem;
@@ -206,31 +209,73 @@ p { font-family: var(--font-body); line-height: 1.7; margin: 0; }
 }
 
 .btn-primary {
-	background: #0052FF;
-	color:      #ffffff;
-	/* No glow on idle — only appears on hover */
-	box-shadow: none;
+	background:      var(--accent-blue);
+	color:           #ffffff;
+	font-family:     var(--font-heading);
+	font-weight:     700;
+	text-transform:  uppercase;
+	letter-spacing:  0.1em;
+	font-size:       0.75rem;
+	padding:         1rem 2rem;
+	box-shadow:      none;
 }
 
 .btn-primary:hover {
-	background:      #0066FF;
-	box-shadow:      none;
-	transform:       translateY(-1px);
+	background:      #0041cc;
+	transform:       translateY(-2px);
+	box-shadow:      0 0 20px rgba(0, 82, 255, 0.4);
 	text-decoration: none;
 	color:           #ffffff;
 }
 
 .btn-secondary {
-	background:  transparent;
-	color:       var(--text-primary);
-	border:      1px solid rgba(255, 255, 255, 0.15);
+	background:      transparent;
+	color:           var(--text-primary);
+	border:          1px solid rgba(255, 255, 255, 0.20);
+	font-family:     var(--font-heading);
+	font-weight:     700;
+	text-transform:  uppercase;
+	letter-spacing:  0.1em;
+	font-size:       0.75rem;
+	padding:         1rem 2rem;
 }
 
 .btn-secondary:hover {
-	border-color:    #00C2FF;
-	color:           var(--accent-blue-hi);
-	transform:       translateY(-1px);
+	border-color:    #ffffff;
+	color:           #ffffff;
+	transform:       translateY(-2px);
 	text-decoration: none;
 }
 
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Form inputs — global baseline ────────────────────────── */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+	background:   var(--bg-base);
+	border:       1px solid rgba(255, 255, 255, 0.10);
+	color:        var(--text-primary);
+	font-family:  var(--font-body);
+	font-size:    0.95rem;
+	padding:      0.9rem 1rem;
+	width:        100%;
+	outline:      none;
+	transition:   border-color 0.2s ease;
+	appearance:   none;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--accent-blue);
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--text-muted);
+}
