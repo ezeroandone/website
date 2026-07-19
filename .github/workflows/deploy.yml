@@ -41,6 +41,9 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler@latest
 
+      - name: List build output
+        run: ls -la build/worker/ || echo "build/worker/ not found"
+
       - name: Deploy Worker to Cloudflare
         run: wrangler deploy
         env:

@@ -1,5 +1,5 @@
 name                = "ezeroandone-api"
-main                = "build/worker/shim.mjs"
+main                = "build/worker/worker.js"
 compatibility_date  = "2025-01-01"
 
 [[d1_databases]]
