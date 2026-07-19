@@ -1,3 +1,0 @@
-[submodule "worker"]
-	path = worker
-	url = ./worker
