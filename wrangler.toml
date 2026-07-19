@@ -1,5 +1,5 @@
 name                = "ezeroandone-api"
-main                = "build/worker/worker_bg.js"
+main                = "build/worker/shim.mjs"
 compatibility_date  = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
