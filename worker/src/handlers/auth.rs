@@ -275,28 +275,20 @@ pub async fn callback(req: Request, env: &Env) -> Result<Response> {
 
     let jwt = sign_jwt(&claims, jwt_secret.as_bytes())?;
 
-    // ── 7. Build session cookie ───────────────────────────────────────────────
-    let cookie = build_session_cookie(&jwt);
-
-    // ── 8. Redirect based on onboarding status ───────────────────────────────
+    // ── 7. Return JSON with JWT so the SvelteKit frontend can set the cookie ──
+    // (A redirect + Set-Cookie from the Worker is blocked by the proxy layer
+    //  which strips cross-origin Set-Cookie headers.)
     let redirect_path = if staff.onboarding_completed {
         "/dashboard"
     } else {
         "/onboarding"
     };
 
-    let mut headers = Headers::new();
-    headers
-        .set("Set-Cookie", &cookie)
-        .map_err(|e| WorkerError::Internal(format!("Failed to set cookie header: {e}")))?;
-    headers
-        .set("Location", redirect_path)
-        .map_err(|e| WorkerError::Internal(format!("Failed to set Location header: {e}")))?;
-
-    Ok(Response::empty()
-        .map_err(|e| WorkerError::Internal(e.to_string()))?
-        .with_headers(headers)
-        .with_status(302))
+    Response::from_json(&serde_json::json!({
+        "jwt": jwt,
+        "redirect": redirect_path,
+    }))
+    .map(|r| r.with_status(200))
 }
 
 // ---------------------------------------------------------------------------
