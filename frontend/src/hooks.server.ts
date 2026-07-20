@@ -1,24 +1,31 @@
 /**
  * SvelteKit server hooks.
  *
- * handleFetch rewrites relative /api/* requests made during SSR so they hit
- * the local Wrangler dev server (port 8787) instead of looping back to the
- * SvelteKit Node.js server.  In production on Cloudflare Pages both the
- * Worker and the frontend share the same origin, so no rewrite is needed.
+ * handleFetch rewrites relative /api/* requests so they reach the correct
+ * backend target in every environment:
+ *
+ *   - Local dev  → http://127.0.0.1:8787  (Wrangler dev server)
+ *   - Production → https://api.ezeroandone.io  (Cloudflare Worker)
+ *
+ * Without this rewrite, SSR-time fetch calls to /api/* would loop back to
+ * the SvelteKit server itself and return 404.
  */
 
 import type { HandleFetch } from '@sveltejs/kit';
 
 export const handleFetch: HandleFetch = async ({ request, fetch }) => {
-	// Only rewrite in local dev — when the origin is localhost:5173.
-	// In production the URL will already point to the correct Cloudflare origin.
 	const url = new URL(request.url);
-	const isLocalDev =
-		url.hostname === 'localhost' || url.hostname === '127.0.0.1';
 
-	if (isLocalDev && url.pathname.startsWith('/api/')) {
+	if (url.pathname.startsWith('/api/')) {
+		const isLocalDev =
+			url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+		const apiBase = isLocalDev
+			? 'http://127.0.0.1:8787'
+			: 'https://api.ezeroandone.io';
+
 		const rewritten = new Request(
-			`http://127.0.0.1:8787${url.pathname}${url.search}`,
+			`${apiBase}${url.pathname}${url.search}`,
 			request
 		);
 		return fetch(rewritten);

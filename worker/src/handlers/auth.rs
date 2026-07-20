@@ -21,7 +21,7 @@ use crate::router::{error_to_response, AuthError, DbError, WorkerError};
 // Corporate domain allowlist
 // ---------------------------------------------------------------------------
 
-const CORPORATE_DOMAINS: &[&str] = &["ezeroandone.com"];
+const CORPORATE_DOMAINS: &[&str] = &["ezeroandone.com", "ezeroandone.io"];
 
 /// Validate that the given email belongs to an allowed corporate domain.
 ///
