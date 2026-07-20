@@ -37,13 +37,15 @@ jobs:
         run: |
           cargo build --release --target wasm32-unknown-unknown
           wasm-pack build --target bundler --out-dir ../build/worker
-          # Write ES module shim that Wrangler requires for module workers
+          # Write ES module shim — worker-rs #[event(fetch)] exposes `fetch` via wasm-bindgen
           cat > ../build/worker/shim.mjs << 'EOF'
-          import * as imports from "./worker_bg.js";
-          import wkmod from "./worker_bg.wasm";
-          const instance = new WebAssembly.Instance(wkmod, { "./worker_bg.js": imports });
-          imports.__wbg_set_wasm(instance.exports);
-          export default instance.exports;
+          import * as worker from "./worker_bg.js";
+          import wasm from "./worker_bg.wasm";
+          const instance = new WebAssembly.Instance(wasm, { "./worker_bg.js": worker });
+          worker.__wbg_set_wasm(instance.exports);
+          export default {
+            fetch: worker.fetch ?? instance.exports.fetch,
+          };
           EOF
 
       - name: Install Wrangler
