@@ -55,11 +55,17 @@ export async function load({ url, fetch, cookies }: RequestEvent) {
 
 		console.log('[callback] jwt prefix:', data.jwt.slice(0, 20), '  redirect:', data.redirect);
 
+		// SameSite=Lax (not Strict) is required here: with Strict, the browser
+		// won't send the cookie on the immediate redirect from /auth/callback
+		// to /onboarding because the navigation originates from an email link
+		// (cross-site context). Lax sends the cookie on top-level GET navigations
+		// while still blocking it on cross-site POST/fetch, which is sufficient
+		// CSRF protection for a session cookie.
 		cookies.set('session', data.jwt, {
 			path: '/',
 			httpOnly: true,
 			secure: true,
-			sameSite: 'strict',
+			sameSite: 'lax',
 			maxAge: 86400,
 		});
 
