@@ -19,29 +19,42 @@ export async function load({ url, fetch, cookies }: RequestEvent) {
 		throw error(400, 'Missing token');
 	}
 
+	const apiUrl = `/api/auth/callback?token=${encodeURIComponent(token)}`;
+	console.log('[callback] fetching', apiUrl);
+
 	let res: Response;
 	try {
-		res = await fetch(`/api/auth/callback?token=${encodeURIComponent(token)}`, {
-			method: 'GET',
-		});
-	} catch {
+		res = await fetch(apiUrl, { method: 'GET' });
+	} catch (e) {
+		console.error('[callback] fetch threw:', e);
 		throw error(502, 'Unable to reach the authentication service.');
 	}
 
+	console.log('[callback] worker status:', res.status);
+
 	if (res.ok) {
+		let raw: string;
+		try {
+			raw = await res.text();
+		} catch (e) {
+			throw error(500, `Failed to read auth response body: ${e}`);
+		}
+
+		console.log('[callback] worker body:', raw);
+
 		let data: { jwt: string; redirect: string };
 		try {
-			data = await res.json() as { jwt: string; redirect: string };
+			data = JSON.parse(raw) as { jwt: string; redirect: string };
 		} catch (e) {
-			throw error(500, `Failed to parse auth response: ${e}`);
+			throw error(500, `Failed to parse auth response as JSON: ${e} — body was: ${raw}`);
 		}
 
 		if (!data.jwt) {
-			throw error(500, 'Auth response missing JWT');
+			throw error(500, `Auth response missing JWT — parsed: ${JSON.stringify(data)}`);
 		}
 
-		// Set the session cookie on the SvelteKit server so it is scoped
-		// to ezeroandone.io (not api.ezeroandone.io).
+		console.log('[callback] jwt prefix:', data.jwt.slice(0, 20), '  redirect:', data.redirect);
+
 		cookies.set('session', data.jwt, {
 			path: '/',
 			httpOnly: true,
@@ -50,15 +63,19 @@ export async function load({ url, fetch, cookies }: RequestEvent) {
 			maxAge: 86400,
 		});
 
+		console.log('[callback] cookie set, redirecting to', data.redirect ?? '/admin/dashboard');
 		throw redirect(302, data.redirect ?? '/admin/dashboard');
 	}
+
+	// Non-2xx — capture body for the error message
+	let body = '';
+	try { body = await res.text(); } catch { body = '(unreadable)'; }
+
+	console.error('[callback] worker error response:', res.status, body);
 
 	if (res.status === 401) {
 		throw error(401, 'This magic link is invalid or has already been used. Please request a new one.');
 	}
 
-	// Expose the actual status and body for debugging
-	let body = '';
-	try { body = await res.text(); } catch { body = '(unreadable)'; }
 	throw error(res.status, `Authentication failed (${res.status}): ${body}`);
 };
