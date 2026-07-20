@@ -102,16 +102,17 @@ async fn post_email(api_key: &str, json_body: &str) -> Result<(), WorkerError> {
     let request = Request::new_with_init(RESEND_API_URL, &init)
         .map_err(|e| WorkerError::Internal(format!("Failed to build Resend request: {e}")))?;
 
-    let response = Fetch::Request(request)
+    let mut response = Fetch::Request(request)
         .send()
         .await
         .map_err(|e| WorkerError::Internal(format!("Resend HTTP request failed: {e}")))?;
 
     let status = response.status_code();
     if !(200..300).contains(&status) {
+        let body = response.text().await.unwrap_or_else(|_| "unreadable".to_string());
         return Err(WorkerError::Internal(format!(
-            "Resend API returned non-2xx status: {}",
-            status
+            "Resend API returned non-2xx status: {} — {}",
+            status, body
         )));
     }
 
