@@ -159,7 +159,7 @@ pub async fn request_magic_link(mut req: Request, env: &Env) -> Result<Response>
 /// 5. Query D1 for existing staff; insert a new row if not found.
 /// 6. Sign a `StaffClaims` JWT valid for 86 400 s.
 /// 7. Set `session` HttpOnly cookie.
-/// 8. Redirect to `/onboarding` or `/dashboard` depending on `onboarding_completed`.
+/// 8. Redirect to `/onboarding` or `/admin/dashboard` depending on `onboarding_completed`.
 ///
 /// Requirements: 1.6, 1.7, 1.8, 1.9, 1.10, 2.1, 19.1, 19.9
 pub async fn callback(req: Request, env: &Env) -> Result<Response> {

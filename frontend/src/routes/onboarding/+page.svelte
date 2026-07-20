@@ -140,7 +140,7 @@
 			}
 
 			// Onboarding done — navigate to dashboard.
-			await goto('/dashboard');
+			await goto('/admin/dashboard');
 		} catch {
 			setError('Unable to reach the server. Check your connection.');
 		}
