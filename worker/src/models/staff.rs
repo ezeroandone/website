@@ -1,6 +1,27 @@
 // Staff domain models.
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+
+/// Deserialise a D1 INTEGER/FLOAT column into a Rust `bool`.
+/// D1 returns booleans as floating-point (0.0 / 1.0) rather than true/false.
+fn deserialize_bool_from_int<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    // D1 may send 0, 1, 0.0, 1.0, or an actual bool — handle all cases.
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum BoolLike {
+        Bool(bool),
+        Int(i64),
+        Float(f64),
+    }
+    match BoolLike::deserialize(deserializer)? {
+        BoolLike::Bool(b) => Ok(b),
+        BoolLike::Int(n) => Ok(n != 0),
+        BoolLike::Float(f) => Ok(f != 0.0),
+    }
+}
 
 /// Access role granted to a staff member.
 ///
@@ -64,6 +85,7 @@ pub struct Staff {
     /// RBAC role.
     pub role: Role,
     /// Whether the staff member has completed the onboarding wizard.
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub onboarding_completed: bool,
     /// PEM-encoded Ed25519/ECDSA public key for QR identity signing.
     pub signing_public_key: Option<String>,
@@ -120,6 +142,7 @@ pub struct StaffAdmin {
     pub bio: String,
     pub avatar_url: String,
     pub role: Role,
+    #[serde(deserialize_with = "deserialize_bool_from_int")]
     pub onboarding_completed: bool,
     pub created_at: i64,
     pub updated_at: i64,

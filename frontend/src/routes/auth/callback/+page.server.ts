@@ -29,7 +29,16 @@ export async function load({ url, fetch, cookies }: RequestEvent) {
 	}
 
 	if (res.ok) {
-		const data = await res.json() as { jwt: string; redirect: string };
+		let data: { jwt: string; redirect: string };
+		try {
+			data = await res.json() as { jwt: string; redirect: string };
+		} catch (e) {
+			throw error(500, `Failed to parse auth response: ${e}`);
+		}
+
+		if (!data.jwt) {
+			throw error(500, 'Auth response missing JWT');
+		}
 
 		// Set the session cookie on the SvelteKit server so it is scoped
 		// to ezeroandone.io (not api.ezeroandone.io).
@@ -48,5 +57,8 @@ export async function load({ url, fetch, cookies }: RequestEvent) {
 		throw error(401, 'This magic link is invalid or has already been used. Please request a new one.');
 	}
 
-	throw error(res.status, 'Authentication failed. Please try again.');
+	// Expose the actual status and body for debugging
+	let body = '';
+	try { body = await res.text(); } catch { body = '(unreadable)'; }
+	throw error(res.status, `Authentication failed (${res.status}): ${body}`);
 };
