@@ -50,7 +50,7 @@ export async function load({ url, fetch, cookies }: RequestEvent) {
 			maxAge: 86400,
 		});
 
-		throw redirect(302, data.redirect ?? '/dashboard');
+		throw redirect(302, data.redirect ?? '/admin/dashboard');
 	}
 
 	if (res.status === 401) {

@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 
 	// Already finished onboarding — redirect to dashboard.
 	if (status.completed) {
-		throw redirect(302, '/dashboard');
+		throw redirect(302, '/admin/dashboard');
 	}
 
 	return { step: status.step, completed: status.completed };

@@ -279,7 +279,7 @@ pub async fn callback(req: Request, env: &Env) -> Result<Response> {
     // (A redirect + Set-Cookie from the Worker is blocked by the proxy layer
     //  which strips cross-origin Set-Cookie headers.)
     let redirect_path = if staff.onboarding_completed {
-        "/dashboard"
+        "/admin/dashboard"
     } else {
         "/onboarding"
     };
