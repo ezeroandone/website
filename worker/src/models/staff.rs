@@ -3,23 +3,25 @@
 use serde::{Deserialize, Deserializer, Serialize};
 
 /// Deserialise a D1 INTEGER/FLOAT column into a Rust `bool`.
-/// D1 returns booleans as floating-point (0.0 / 1.0) rather than true/false.
+///
+/// D1 returns SQLite booleans as floating-point (0.0 / 1.0) rather than
+/// true/false. Using `#[serde(untagged)]` is unreliable here because serde
+/// tries `bool` first and surfaces its error before reaching `f64`. Instead
+/// we deserialise into a `serde_json::Value` and match on the actual variant.
 fn deserialize_bool_from_int<'de, D>(deserializer: D) -> Result<bool, D::Error>
 where
     D: Deserializer<'de>,
 {
-    // D1 may send 0, 1, 0.0, 1.0, or an actual bool — handle all cases.
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum BoolLike {
-        Bool(bool),
-        Int(i64),
-        Float(f64),
-    }
-    match BoolLike::deserialize(deserializer)? {
-        BoolLike::Bool(b) => Ok(b),
-        BoolLike::Int(n) => Ok(n != 0),
-        BoolLike::Float(f) => Ok(f != 0.0),
+    use serde::de::Error;
+    match serde_json::Value::deserialize(deserializer)? {
+        serde_json::Value::Bool(b)   => Ok(b),
+        serde_json::Value::Number(n) => {
+            // Covers both integer (0/1) and float (0.0/1.0) cases.
+            Ok(n.as_f64().map(|f| f != 0.0).unwrap_or(false))
+        }
+        other => Err(D::Error::custom(format!(
+            "expected bool or number for boolean column, got: {other}"
+        ))),
     }
 }
 
