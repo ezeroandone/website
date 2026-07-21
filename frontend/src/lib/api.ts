@@ -36,6 +36,13 @@ export interface Post {
   /** Unix timestamp (seconds) of the last update */
   updated_at: number;
   published: boolean;
+  // Rich metadata (added in 0002_post_meta migration)
+  featured_image_url: string;
+  category: string;
+  tags: string;
+  project_type: string;
+  technologies: string;
+  material_icon: string;
   /** Populated when the API returns the author joined to the post */
   author?: StaffPublicProfile;
 }

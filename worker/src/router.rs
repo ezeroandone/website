@@ -163,10 +163,20 @@ pub async fn router_dispatch(
         return content_handlers::list_work(req, env).await;
     }
 
+    // GET /api/work/:slug/team  (must be checked before /api/work/:slug)
+    if method == Method::Get && path.starts_with("/api/work/") && path.ends_with("/team") {
+        let inner = path.trim_start_matches("/api/work/").trim_end_matches("/team");
+        if !inner.is_empty() && !inner.contains('/') {
+            return content_handlers::get_work_team(req, env, inner).await;
+        }
+    }
+
     // GET /api/work/:slug
     if method == Method::Get && path.starts_with("/api/work/") {
         let slug = path.trim_start_matches("/api/work/");
-        return content_handlers::get_work(req, env, slug).await;
+        if !slug.contains('/') {
+            return content_handlers::get_work(req, env, slug).await;
+        }
     }
 
     // GET /api/capabilities

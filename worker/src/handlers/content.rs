@@ -6,6 +6,7 @@
 //! GET /api/insights/:slug       — get single insight post
 //! GET /api/work                 — list published work posts
 //! GET /api/work/:slug           — get single work post
+//! GET /api/work/:slug/team      — get team members for a work post (public)
 //! GET /api/capabilities         — list published capability posts
 //! GET /api/capabilities/:slug   — get single capability post
 //!
@@ -38,6 +39,19 @@ struct PostListRow {
     pub published_at: Option<i64>,
     pub updated_at: i64,
     pub author_id: Option<String>,
+    // Rich metadata
+    #[serde(default)]
+    pub featured_image_url: String,
+    #[serde(default)]
+    pub category: String,
+    #[serde(default)]
+    pub tags: String,
+    #[serde(default)]
+    pub project_type: String,
+    #[serde(default)]
+    pub technologies: String,
+    #[serde(default)]
+    pub material_icon: String,
 }
 
 /// Row returned by the single-post query (includes author join).
@@ -54,6 +68,19 @@ struct PostDetailRow {
     pub published_at: Option<i64>,
     pub updated_at: i64,
     pub published: i64,
+    // Rich metadata
+    #[serde(default)]
+    pub featured_image_url: String,
+    #[serde(default)]
+    pub category: String,
+    #[serde(default)]
+    pub tags: String,
+    #[serde(default)]
+    pub project_type: String,
+    #[serde(default)]
+    pub technologies: String,
+    #[serde(default)]
+    pub material_icon: String,
     // Author fields joined from staff
     pub username: Option<String>,
     pub name: Option<String>,
@@ -75,7 +102,8 @@ async fn fetch_post_list(env: &Env, post_type: &str) -> StdResult<Vec<PostListRo
 
     let results = db
         .prepare(
-            "SELECT id, type, slug, title, summary, published_at, updated_at, author_id \
+            "SELECT id, type, slug, title, summary, published_at, updated_at, author_id, \
+             featured_image_url, category, tags, project_type, technologies, material_icon \
              FROM post \
              WHERE type = ?1 AND published = 1 \
              ORDER BY published_at DESC",
@@ -106,6 +134,7 @@ async fn fetch_post_detail(
     db.prepare(
         "SELECT p.id, p.type, p.slug, p.title, p.summary, p.body_md, \
                 p.author_id, p.published_at, p.updated_at, p.published, \
+                p.featured_image_url, p.category, p.tags, p.project_type, p.technologies, p.material_icon, \
                 s.username, s.name, s.job_title, s.avatar_url \
          FROM post p \
          LEFT JOIN staff s ON p.author_id = s.id \
@@ -226,6 +255,57 @@ pub async fn list_work(req: &Request, env: &Env) -> Result<Response> {
 /// Requirements: 10.1, 10.3, 10.4, 13.1, 13.4, 13.5, 13.6
 pub async fn get_work(req: &Request, env: &Env, slug: &str) -> Result<Response> {
     get_post(req, env, slug, "work").await
+}
+
+// ---------------------------------------------------------------------------
+// GET /api/work/:slug/team
+// ---------------------------------------------------------------------------
+
+/// Return the team members for a published work post — publicly accessible.
+///
+/// Looks up the post by slug (must be type=work and published=1), then
+/// returns all post_team_member rows joined with staff public profile data.
+/// Returns HTTP 404 if the work post is not found or not published.
+pub async fn get_work_team(_req: &Request, env: &Env, slug: &str) -> Result<Response> {
+    let db = env
+        .d1("DB")
+        .map_err(|e| WorkerError::Internal(e.to_string()))?;
+
+    // Resolve slug → post id, ensure published
+    let post_id = db
+        .prepare("SELECT id FROM post WHERE slug = ?1 AND type = 'work' AND published = 1")
+        .bind(&[slug.into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .first::<serde_json::Value>(None)
+        .await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .and_then(|v| v.get("id").and_then(|id| id.as_str()).map(|s| s.to_string()))
+        .ok_or(WorkerError::NotFound)?;
+
+    let results = db
+        .prepare(
+            "SELECT ptm.id, ptm.post_id, ptm.staff_id, \
+                    s.name AS staff_name, s.username AS staff_username, \
+                    s.avatar_url AS staff_avatar_url, s.job_title AS staff_job_title, \
+                    ptm.ext_name, ptm.ext_role, ptm.ext_url, ptm.sort_order \
+             FROM post_team_member ptm \
+             LEFT JOIN staff s ON ptm.staff_id = s.id \
+             WHERE ptm.post_id = ?1 \
+             ORDER BY ptm.sort_order ASC",
+        )
+        .bind(&[post_id.as_str().into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .all()
+        .await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+
+    let rows: Vec<serde_json::Value> = results
+        .results::<serde_json::Value>()
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+
+    Response::from_json(&rows)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
 }
 
 // ---------------------------------------------------------------------------
