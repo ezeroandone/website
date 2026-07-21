@@ -132,6 +132,91 @@
     await fetch(`/api/admin/content/${postId}/team/${memberId}`, { method: 'DELETE', credentials: 'include' });
     await refreshTeam(postId);
   }
+
+  // ── Edit state ────────────────────────────────────────────────────────────
+  let editPost = $state<Post | null>(null);
+  let eTitle = $state(''); let eSummary = $state(''); let eBody = $state('');
+  let ePublished = $state(false); let eFeaturedUrl = $state(''); let eFeaturedFile = $state<File | null>(null);
+  let eCategory = $state(''); let eTags = $state('');
+  let eProjectType = $state(''); let eTechnologies = $state('');
+  let eMaterialIcon = $state('');
+  let eBusy = $state(false);
+  let eTeam = $state<TeamMember[]>([]);
+  let eTeamStaffId = $state(''); let eTeamExtName = $state(''); let eTeamExtRole = $state('');
+  let eTeamExtUrl = $state(''); let eTeamIsExternal = $state(false);
+  let deletingId = $state<string | null>(null);
+
+  async function openEdit(post: Post) {
+    editPost = post; eTitle = post.title; eSummary = post.summary;
+    eBody = post.body_md; ePublished = post.published; eFeaturedUrl = post.featured_image_url;
+    eCategory = post.category; eTags = post.tags;
+    eProjectType = post.project_type; eTechnologies = post.technologies;
+    eMaterialIcon = post.material_icon || 'star';
+    eFeaturedFile = null; eTeam = [];
+    overlay = post.id;
+    if (post.type === 'work') {
+      const r = await fetch(`/api/admin/content/${post.id}/team`, { credentials: 'include' });
+      if (r.ok) eTeam = await r.json();
+    }
+  }
+
+  async function handleEdit(e: SubmitEvent) {
+    e.preventDefault();
+    if (!editPost) return;
+    eBusy = true;
+    try {
+      const body: Record<string, unknown> = {
+        title: eTitle, summary: eSummary, body_md: eBody, published: ePublished,
+        featured_image_url: eFeaturedUrl, category: eCategory, tags: eTags,
+        project_type: eProjectType, technologies: eTechnologies, material_icon: eMaterialIcon,
+      };
+      if (ePublished && !editPost.published) body.published_at = Math.floor(Date.now() / 1000);
+      const res = await fetch(`/api/admin/content/${editPost.id}`, {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      if (!res.ok) { showStatus(`Update failed: ${await res.text()}`, false); return; }
+      if (eFeaturedFile) await uploadCover(editPost.id, eFeaturedFile);
+      const updated: Post = await res.json();
+      posts = posts.map(p => p.id === updated.id ? updated : p);
+      overlay = null; editPost = null;
+      showStatus('Post updated.', true);
+    } catch { showStatus('Network error.', false); }
+    finally { eBusy = false; }
+  }
+
+  async function handleDelete(post: Post) {
+    if (!confirm(`Delete "${post.title}"? Cannot be undone.`)) return;
+    deletingId = post.id;
+    try {
+      const res = await fetch(`/api/admin/content/${post.id}`, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) { showStatus(`Delete failed: ${await res.text()}`, false); return; }
+      posts = posts.filter(p => p.id !== post.id);
+      showStatus('Post deleted.', true);
+    } catch { showStatus('Network error.', false); }
+    finally { deletingId = null; }
+  }
+
+  async function addEditTeamMember(postId: string) {
+    const body = eTeamIsExternal
+      ? { ext_name: eTeamExtName, ext_role: eTeamExtRole, ext_url: eTeamExtUrl }
+      : { staff_id: eTeamStaffId };
+    const res = await fetch(`/api/admin/content/${postId}/team`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      eTeamStaffId = ''; eTeamExtName = ''; eTeamExtRole = ''; eTeamExtUrl = '';
+      const r = await fetch(`/api/admin/content/${postId}/team`, { credentials: 'include' });
+      if (r.ok) eTeam = await r.json();
+    }
+  }
+
+  async function removeEditTeamMember(postId: string, memberId: string) {
+    await fetch(`/api/admin/content/${postId}/team/${memberId}`, { method: 'DELETE', credentials: 'include' });
+    const r = await fetch(`/api/admin/content/${postId}/team`, { credentials: 'include' });
+    if (r.ok) eTeam = await r.json();
+  }
 </script>
 
 <script context="module" lang="ts">
@@ -363,93 +448,6 @@
   </div>
 </div>
 {/if}
-
-<script lang="ts">
-  // Edit state
-  let editPost = $state<Post | null>(null);
-  let eTitle = $state(''); let eSummary = $state(''); let eBody = $state('');
-  let ePublished = $state(false); let eFeaturedUrl = $state(''); let eFeaturedFile = $state<File | null>(null);
-  let eCategory = $state(''); let eTags = $state('');
-  let eProjectType = $state(''); let eTechnologies = $state('');
-  let eMaterialIcon = $state('');
-  let eBusy = $state(false);
-  let eTeam = $state<TeamMember[]>([]);
-  let eTeamStaffId = $state(''); let eTeamExtName = $state(''); let eTeamExtRole = $state('');
-  let eTeamExtUrl = $state(''); let eTeamIsExternal = $state(false);
-  let deletingId = $state<string | null>(null);
-
-  async function openEdit(post: Post) {
-    editPost = post; eTitle = post.title; eSummary = post.summary;
-    eBody = post.body_md; ePublished = post.published; eFeaturedUrl = post.featured_image_url;
-    eCategory = post.category; eTags = post.tags;
-    eProjectType = post.project_type; eTechnologies = post.technologies;
-    eMaterialIcon = post.material_icon || 'star';
-    eFeaturedFile = null; eTeam = [];
-    overlay = post.id;
-    if (post.type === 'work') {
-      const r = await fetch(`/api/admin/content/${post.id}/team`, { credentials: 'include' });
-      if (r.ok) eTeam = await r.json();
-    }
-  }
-
-  async function handleEdit(e: SubmitEvent) {
-    e.preventDefault();
-    if (!editPost) return;
-    eBusy = true;
-    try {
-      const body: Record<string, unknown> = {
-        title: eTitle, summary: eSummary, body_md: eBody, published: ePublished,
-        featured_image_url: eFeaturedUrl, category: eCategory, tags: eTags,
-        project_type: eProjectType, technologies: eTechnologies, material_icon: eMaterialIcon,
-      };
-      if (ePublished && !editPost.published) body.published_at = Math.floor(Date.now() / 1000);
-      const res = await fetch(`/api/admin/content/${editPost.id}`, {
-        method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      });
-      if (!res.ok) { showStatus(`Update failed: ${await res.text()}`, false); return; }
-      if (eFeaturedFile) await uploadCover(editPost.id, eFeaturedFile);
-      const updated: Post = await res.json();
-      posts = posts.map(p => p.id === updated.id ? updated : p);
-      overlay = null; editPost = null;
-      showStatus('Post updated.', true);
-    } catch { showStatus('Network error.', false); }
-    finally { eBusy = false; }
-  }
-
-  async function handleDelete(post: Post) {
-    if (!confirm(`Delete "${post.title}"? Cannot be undone.`)) return;
-    deletingId = post.id;
-    try {
-      const res = await fetch(`/api/admin/content/${post.id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) { showStatus(`Delete failed: ${await res.text()}`, false); return; }
-      posts = posts.filter(p => p.id !== post.id);
-      showStatus('Post deleted.', true);
-    } catch { showStatus('Network error.', false); }
-    finally { deletingId = null; }
-  }
-
-  async function addEditTeamMember(postId: string) {
-    const body = eTeamIsExternal
-      ? { ext_name: eTeamExtName, ext_role: eTeamExtRole, ext_url: eTeamExtUrl }
-      : { staff_id: eTeamStaffId };
-    const res = await fetch(`/api/admin/content/${postId}/team`, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      eTeamStaffId = ''; eTeamExtName = ''; eTeamExtRole = ''; eTeamExtUrl = '';
-      const r = await fetch(`/api/admin/content/${postId}/team`, { credentials: 'include' });
-      if (r.ok) eTeam = await r.json();
-    }
-  }
-
-  async function removeEditTeamMember(postId: string, memberId: string) {
-    await fetch(`/api/admin/content/${postId}/team/${memberId}`, { method: 'DELETE', credentials: 'include' });
-    const r = await fetch(`/api/admin/content/${postId}/team`, { credentials: 'include' });
-    if (r.ok) eTeam = await r.json();
-  }
-</script>
 
 <!-- ── Edit overlay ────────────────────────────────────────────────────────── -->
 {#if overlay !== null && overlay !== 'create' && editPost !== null}
