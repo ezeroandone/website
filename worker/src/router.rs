@@ -547,6 +547,126 @@ pub async fn router_dispatch(
         }
     }
 
+    // GET /api/clients  (public)
+    if method == Method::Get && path == "/api/clients" {
+        return admin_handlers::list_clients_public(req, env).await;
+    }
+
+    // GET /api/admin/clients
+    if method == Method::Get && path == "/api/admin/clients" {
+        let ctx = match auth_middleware(req, env, Role::Admin).await {
+            Ok(ctx) => ctx,
+            Err(resp) => return Ok(resp),
+        };
+        return admin_handlers::list_clients(req, env, ctx).await;
+    }
+
+    // POST /api/admin/clients
+    if method == Method::Post && path == "/api/admin/clients" {
+        let ctx = match auth_middleware(req, env, Role::Admin).await {
+            Ok(ctx) => ctx,
+            Err(resp) => return Ok(resp),
+        };
+        return admin_handlers::create_client(req.clone()?, env, ctx).await;
+    }
+
+    // PATCH /api/admin/clients/:id
+    if method == Method::Patch && path.starts_with("/api/admin/clients/") {
+        let id = path.trim_start_matches("/api/admin/clients/").to_string();
+        if !id.contains('/') {
+            let ctx = match auth_middleware(req, env, Role::Admin).await {
+                Ok(ctx) => ctx,
+                Err(resp) => return Ok(resp),
+            };
+            return admin_handlers::patch_client(req.clone()?, env, ctx, &id).await;
+        }
+    }
+
+    // DELETE /api/admin/clients/:id
+    if method == Method::Delete && path.starts_with("/api/admin/clients/") {
+        let id = path.trim_start_matches("/api/admin/clients/").to_string();
+        if !id.contains('/') {
+            let ctx = match auth_middleware(req, env, Role::Admin).await {
+                Ok(ctx) => ctx,
+                Err(resp) => return Ok(resp),
+            };
+            return admin_handlers::delete_client(req, env, ctx, &id).await;
+        }
+    }
+
+    // GET /api/admin/content/:id/team
+    if method == Method::Get {
+        let segments: Vec<&str> = path.split('/').collect();
+        if segments.len() == 6
+            && segments[1] == "api"
+            && segments[2] == "admin"
+            && segments[3] == "content"
+            && segments[5] == "team"
+        {
+            let id = segments[4].to_string();
+            let ctx = match auth_middleware(req, env, Role::Admin).await {
+                Ok(ctx) => ctx,
+                Err(resp) => return Ok(resp),
+            };
+            return admin_handlers::list_post_team(req, env, ctx, &id).await;
+        }
+    }
+
+    // POST /api/admin/content/:id/team
+    if method == Method::Post {
+        let segments: Vec<&str> = path.split('/').collect();
+        if segments.len() == 6
+            && segments[1] == "api"
+            && segments[2] == "admin"
+            && segments[3] == "content"
+            && segments[5] == "team"
+        {
+            let id = segments[4].to_string();
+            let ctx = match auth_middleware(req, env, Role::Admin).await {
+                Ok(ctx) => ctx,
+                Err(resp) => return Ok(resp),
+            };
+            return admin_handlers::add_post_team_member(req.clone()?, env, ctx, &id).await;
+        }
+    }
+
+    // DELETE /api/admin/content/:post_id/team/:member_id
+    if method == Method::Delete {
+        let segments: Vec<&str> = path.split('/').collect();
+        if segments.len() == 7
+            && segments[1] == "api"
+            && segments[2] == "admin"
+            && segments[3] == "content"
+            && segments[5] == "team"
+        {
+            let post_id = segments[4].to_string();
+            let member_id = segments[6].to_string();
+            let ctx = match auth_middleware(req, env, Role::Admin).await {
+                Ok(ctx) => ctx,
+                Err(resp) => return Ok(resp),
+            };
+            return admin_handlers::remove_post_team_member(req, env, ctx, &post_id, &member_id).await;
+        }
+    }
+
+    // POST /api/upload/client/:id/logo
+    if method == Method::Post {
+        let segments: Vec<&str> = path.split('/').collect();
+        if segments.len() == 6
+            && segments[1] == "api"
+            && segments[2] == "upload"
+            && segments[3] == "client"
+            && segments[5] == "logo"
+        {
+            let id = segments[4].to_string();
+            let ctx = match auth_middleware(req, env, Role::Admin).await {
+                Ok(ctx) => ctx,
+                Err(resp) => return Ok(resp),
+            };
+            return admin_handlers::handle_upload_client_logo(&id, req.clone()?, ctx, env).await;
+        }
+    }
+
     // ── SuperAdmin-protected routes (Role::SuperAdmin required) ──────────────
 
     // DELETE /api/admin/content/:id

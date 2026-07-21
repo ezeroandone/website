@@ -21,10 +21,16 @@ struct Migration {
 /// when the worker crate is compiled.  The path is relative to this source
 /// file (`src/db/migrations.rs`) and walks up two levels to reach
 /// `worker/migrations/`.
-static MIGRATIONS: &[Migration] = &[Migration {
-    name: "0001_initial",
-    sql: include_str!("../../migrations/0001_initial.sql"),
-}];
+static MIGRATIONS: &[Migration] = &[
+    Migration {
+        name: "0001_initial",
+        sql: include_str!("../../migrations/0001_initial.sql"),
+    },
+    Migration {
+        name: "0002_post_meta",
+        sql: include_str!("../../migrations/0002_post_meta.sql"),
+    },
+];
 
 /// Run all unapplied migrations against `db`.
 ///

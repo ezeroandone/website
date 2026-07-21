@@ -942,8 +942,9 @@ pub async fn create_content(mut req: Request, env: &Env, _ctx: SessionContext) -
     };
 
     db.prepare(
-        "INSERT INTO post (type, slug, title, summary, body_md, author_id, published) \
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0)",
+        "INSERT INTO post (type, slug, title, summary, body_md, author_id, published, \
+         featured_image_url, category, tags, project_type, technologies, material_icon) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?8, ?9, ?10, ?11, ?12)",
     )
     .bind(&[
         post_type.as_str().into(),
@@ -952,6 +953,12 @@ pub async fn create_content(mut req: Request, env: &Env, _ctx: SessionContext) -
         summary.as_str().into(),
         body_md.as_str().into(),
         author_id_value,
+        body.get("featured_image_url").and_then(|v| v.as_str()).unwrap_or("").to_string().into(),
+        body.get("category").and_then(|v| v.as_str()).unwrap_or("").to_string().into(),
+        body.get("tags").and_then(|v| v.as_str()).unwrap_or("").to_string().into(),
+        body.get("project_type").and_then(|v| v.as_str()).unwrap_or("").to_string().into(),
+        body.get("technologies").and_then(|v| v.as_str()).unwrap_or("").to_string().into(),
+        body.get("material_icon").and_then(|v| v.as_str()).unwrap_or("").to_string().into(),
     ])
     .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
     .run()
@@ -962,7 +969,8 @@ pub async fn create_content(mut req: Request, env: &Env, _ctx: SessionContext) -
     let post = db
         .prepare(
             "SELECT id, type, slug, title, summary, body_md, author_id, \
-             published_at, updated_at, published \
+             published_at, updated_at, published, \
+             featured_image_url, category, tags, project_type, technologies, material_icon \
              FROM post WHERE slug = ?1 AND type = ?2",
         )
         .bind(&[slug.as_str().into(), post_type.as_str().into()])
@@ -1006,7 +1014,8 @@ pub async fn patch_content(mut req: Request, env: &Env, _ctx: SessionContext, id
     let current = db
         .prepare(
             "SELECT id, type, slug, title, summary, body_md, author_id, \
-             published_at, updated_at, published \
+             published_at, updated_at, published, \
+             featured_image_url, category, tags, project_type, technologies, material_icon \
              FROM post WHERE id = ?1",
         )
         .bind(&[id.into()])
@@ -1060,6 +1069,12 @@ pub async fn patch_content(mut req: Request, env: &Env, _ctx: SessionContext, id
     push_str_field!("summary",  "summary");
     push_str_field!("body_md",  "body_md");
     push_str_field!("slug",     "slug");
+    push_str_field!("featured_image_url", "featured_image_url");
+    push_str_field!("category",           "category");
+    push_str_field!("tags",               "tags");
+    push_str_field!("project_type",       "project_type");
+    push_str_field!("technologies",       "technologies");
+    push_str_field!("material_icon",      "material_icon");
 
     // published is bool → stored as integer
     if let Some(published) = body.get("published").and_then(|v| v.as_bool()) {
@@ -1103,7 +1118,8 @@ pub async fn patch_content(mut req: Request, env: &Env, _ctx: SessionContext, id
     let post = db
         .prepare(
             "SELECT id, type, slug, title, summary, body_md, author_id, \
-             published_at, updated_at, published \
+             published_at, updated_at, published, \
+             featured_image_url, category, tags, project_type, technologies, material_icon \
              FROM post WHERE id = ?1",
         )
         .bind(&[id.into()])
@@ -1606,4 +1622,245 @@ pub async fn handle_get_document_presigned_url(
 fn now_unix() -> i64 {
     // Date::now().as_millis() returns u64 milliseconds since epoch
     (Date::now().as_millis() / 1000) as i64
+}
+
+// ---------------------------------------------------------------------------
+// Client logo handlers
+// ---------------------------------------------------------------------------
+
+/// GET /api/clients  — public list of active client logos.
+pub async fn list_clients_public(_req: &Request, env: &Env) -> Result<Response> {
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    let results = db
+        .prepare(
+            "SELECT id, name, logo_url, website_url, sort_order, active, created_at \
+             FROM client_logo WHERE active = 1 ORDER BY sort_order ASC, created_at ASC",
+        )
+        .all()
+        .await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    let rows: Vec<serde_json::Value> = results
+        .results::<serde_json::Value>()
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    Response::from_json(&rows)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// GET /api/admin/clients  — all client logos (admin).
+pub async fn list_clients(_req: &Request, env: &Env, _ctx: SessionContext) -> Result<Response> {
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    let results = db
+        .prepare(
+            "SELECT id, name, logo_url, website_url, sort_order, active, created_at \
+             FROM client_logo ORDER BY sort_order ASC, created_at ASC",
+        )
+        .all()
+        .await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    let rows: Vec<serde_json::Value> = results
+        .results::<serde_json::Value>()
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    Response::from_json(&rows)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// POST /api/admin/clients
+pub async fn create_client(mut req: Request, env: &Env, _ctx: SessionContext) -> Result<Response> {
+    let body: serde_json::Value = req
+        .json().await
+        .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+    let name = body.get("name").and_then(|v| v.as_str()).unwrap_or("").trim().to_string();
+    let logo_url = body.get("logo_url").and_then(|v| v.as_str()).unwrap_or("").trim().to_string();
+    if name.is_empty() || logo_url.is_empty() {
+        return error_to_response(WorkerError::Validation(
+            ValidationError::InvalidInput("name and logo_url are required".into()),
+        ));
+    }
+    let website_url = body.get("website_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let sort_order = body.get("sort_order").and_then(|v| v.as_i64()).unwrap_or(0);
+    let active: i64 = if body.get("active").and_then(|v| v.as_bool()).unwrap_or(true) { 1 } else { 0 };
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    db.prepare(
+        "INSERT INTO client_logo (name, logo_url, website_url, sort_order, active) \
+         VALUES (?1, ?2, ?3, ?4, ?5)",
+    )
+    .bind(&[name.as_str().into(), logo_url.as_str().into(),
+             website_url.as_str().into(), sort_order.into(), active.into()])
+    .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+    .run().await
+    .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    let row = db
+        .prepare("SELECT id, name, logo_url, website_url, sort_order, active, created_at \
+                  FROM client_logo WHERE name = ?1 ORDER BY created_at DESC LIMIT 1")
+        .bind(&[name.as_str().into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .first::<serde_json::Value>(None).await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .ok_or_else(|| WorkerError::Internal("Row missing after insert".into()))?;
+    Response::from_json(&row)
+        .map(|r| r.with_status(201))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// PATCH /api/admin/clients/:id
+pub async fn patch_client(mut req: Request, env: &Env, _ctx: SessionContext, id: &str) -> Result<Response> {
+    let body: serde_json::Value = req
+        .json().await
+        .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    let mut set_clauses: Vec<String> = Vec::new();
+    let mut bindings: Vec<wasm_bindgen::JsValue> = Vec::new();
+    let mut idx: u32 = 1;
+    macro_rules! push_str {
+        ($key:expr, $col:expr) => {
+            if let Some(v) = body.get($key).and_then(|v| v.as_str()) {
+                set_clauses.push(format!("{} = ?{}", $col, idx));
+                bindings.push(v.to_string().into()); idx += 1;
+            }
+        };
+    }
+    push_str!("name",        "name");
+    push_str!("logo_url",    "logo_url");
+    push_str!("website_url", "website_url");
+    if let Some(n) = body.get("sort_order").and_then(|v| v.as_i64()) {
+        set_clauses.push(format!("sort_order = ?{}", idx)); bindings.push(n.into()); idx += 1;
+    }
+    if let Some(b) = body.get("active").and_then(|v| v.as_bool()) {
+        let v: i64 = if b { 1 } else { 0 };
+        set_clauses.push(format!("active = ?{}", idx)); bindings.push(v.into()); idx += 1;
+    }
+    if set_clauses.is_empty() {
+        return error_to_response(WorkerError::Validation(ValidationError::InvalidInput("No fields provided".into())));
+    }
+    let sql = format!("UPDATE client_logo SET {} WHERE id = ?{}", set_clauses.join(", "), idx);
+    bindings.push(id.to_string().into());
+    db.prepare(&sql).bind(&bindings)
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .run().await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    let row = db
+        .prepare("SELECT id, name, logo_url, website_url, sort_order, active, created_at \
+                  FROM client_logo WHERE id = ?1")
+        .bind(&[id.into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .first::<serde_json::Value>(None).await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .ok_or(WorkerError::NotFound)?;
+    Response::from_json(&row)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// DELETE /api/admin/clients/:id
+pub async fn delete_client(_req: &Request, env: &Env, _ctx: SessionContext, id: &str) -> Result<Response> {
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    db.prepare("DELETE FROM client_logo WHERE id = ?1")
+        .bind(&[id.into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .run().await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    Response::empty().map(|r| r.with_status(204))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// POST /api/upload/client/:id/logo
+pub async fn handle_upload_client_logo(
+    client_id: &str,
+    mut req: Request,
+    _ctx: SessionContext,
+    env: &Env,
+) -> Result<Response> {
+    let bucket = env.bucket("EZO_MEDIA")
+        .map_err(|e| WorkerError::Internal(format!("R2 bucket error: {}", e)))?;
+    let (bytes, _filename, mime) =
+        match parse_and_validate_image_upload(&mut req, ALLOWED_IMAGE_MIMES, MAX_IMAGE_SIZE).await {
+            Ok(v) => v,
+            Err(resp) => return resp,
+        };
+    let ext = extension_from_mime(mime);
+    let key = format!("clients/{}/logo.{}", client_id, ext);
+    let url = r2_put_public(&bucket, &key, bytes, mime, "public, max-age=31536000, immutable")
+        .await
+        .map_err(|e| WorkerError::Internal(format!("R2 upload failed: {:?}", e)))?;
+    Response::from_json(&serde_json::json!({ "url": url }))
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+// ---------------------------------------------------------------------------
+// Post team member handlers
+// ---------------------------------------------------------------------------
+
+/// GET /api/admin/content/:post_id/team
+pub async fn list_post_team(_req: &Request, env: &Env, _ctx: SessionContext, post_id: &str) -> Result<Response> {
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    let results = db
+        .prepare(
+            "SELECT ptm.id, ptm.post_id, ptm.staff_id, \
+                    s.name AS staff_name, s.username AS staff_username, s.avatar_url AS staff_avatar_url, \
+                    ptm.ext_name, ptm.ext_role, ptm.ext_url, ptm.sort_order \
+             FROM post_team_member ptm \
+             LEFT JOIN staff s ON ptm.staff_id = s.id \
+             WHERE ptm.post_id = ?1 \
+             ORDER BY ptm.sort_order ASC",
+        )
+        .bind(&[post_id.into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .all().await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    let rows: Vec<serde_json::Value> = results
+        .results::<serde_json::Value>()
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    Response::from_json(&rows)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// POST /api/admin/content/:post_id/team
+pub async fn add_post_team_member(mut req: Request, env: &Env, _ctx: SessionContext, post_id: &str) -> Result<Response> {
+    let body: serde_json::Value = req
+        .json().await
+        .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+    let staff_id: Option<String> = body.get("staff_id").and_then(|v| v.as_str()).map(|s| s.to_string());
+    let ext_name = body.get("ext_name").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let ext_role = body.get("ext_role").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let ext_url  = body.get("ext_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let sort_order = body.get("sort_order").and_then(|v| v.as_i64()).unwrap_or(0);
+    if staff_id.is_none() && ext_name.is_empty() {
+        return error_to_response(WorkerError::Validation(
+            ValidationError::InvalidInput("Either staff_id or ext_name is required".into()),
+        ));
+    }
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    let staff_id_val: wasm_bindgen::JsValue = match &staff_id {
+        Some(id) => id.as_str().into(),
+        None => wasm_bindgen::JsValue::NULL,
+    };
+    db.prepare(
+        "INSERT INTO post_team_member (post_id, staff_id, ext_name, ext_role, ext_url, sort_order) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+    )
+    .bind(&[post_id.into(), staff_id_val,
+             ext_name.as_str().into(), ext_role.as_str().into(),
+             ext_url.as_str().into(), sort_order.into()])
+    .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+    .run().await
+    .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    Response::from_json(&serde_json::json!({ "ok": true }))
+        .map(|r| r.with_status(201))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+/// DELETE /api/admin/content/:post_id/team/:member_id
+pub async fn remove_post_team_member(_req: &Request, env: &Env, _ctx: SessionContext, post_id: &str, member_id: &str) -> Result<Response> {
+    let db = env.d1("DB").map_err(|e| WorkerError::Internal(e.to_string()))?;
+    db.prepare("DELETE FROM post_team_member WHERE id = ?1 AND post_id = ?2")
+        .bind(&[member_id.into(), post_id.into()])
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .run().await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+    Response::empty().map(|r| r.with_status(204))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
 }
