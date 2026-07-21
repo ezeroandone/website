@@ -178,6 +178,7 @@
 
 <svelte:head>
   <title>Staff Management — eZeroAndOne Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
 </svelte:head>
 
 <section class="staff-page">
@@ -195,7 +196,7 @@
   {#if data.staff.length === 0}
     <GlassCard accentColor="blue">
       <div class="empty-state">
-        <span class="empty-icon" aria-hidden="true">👤</span>
+        <span class="material-icons-outlined empty-icon" aria-hidden="true">group</span>
         <p>No staff members yet.</p>
       </div>
     </GlassCard>

@@ -7,6 +7,7 @@
    */
   import type { PageProps } from './$types';
   import type { StaffAdmin } from '../staff/+page.server';
+  import MaterialIconPicker from '$lib/components/MaterialIconPicker.svelte';
 
   let { data }: PageProps = $props();
 
@@ -219,15 +220,6 @@
   }
 </script>
 
-<script context="module" lang="ts">
-  // Material Icons commonly used for capabilities
-  export const CAPABILITY_ICONS = [
-    'rocket_launch','bolt','hub','psychology','cloud','code','security',
-    'analytics','palette','devices','settings','build','integration_instructions',
-    'storage','speed','visibility','public','api','memory','architecture',
-  ];
-</script>
-
 <svelte:head>
   <title>Content — eZeroAndOne Admin</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
@@ -369,15 +361,7 @@
       {#if cType === 'capability'}
       <div class="field">
         <span class="field-label">Material Icon</span>
-        <div class="icon-grid">
-          {#each CAPABILITY_ICONS as icon}
-            <button type="button" class="icon-btn" class:selected={cMaterialIcon === icon}
-              onclick={() => (cMaterialIcon = icon)} title={icon}>
-              <span class="material-icons-outlined">{icon}</span>
-            </button>
-          {/each}
-        </div>
-        <input type="text" bind:value={cMaterialIcon} class="input" placeholder="or type any icon name" style="margin-top:8px" />
+        <MaterialIconPicker bind:value={cMaterialIcon} />
       </div>
       {/if}
 
@@ -530,14 +514,7 @@
       {#if editPost.type === 'capability'}
       <div class="field">
         <span class="field-label">Material Icon</span>
-        <div class="icon-grid">
-          {#each CAPABILITY_ICONS as icon}
-            <button type="button" class="icon-btn" class:selected={eMaterialIcon === icon} onclick={() => (eMaterialIcon = icon)} title={icon}>
-              <span class="material-icons-outlined">{icon}</span>
-            </button>
-          {/each}
-        </div>
-        <input type="text" bind:value={eMaterialIcon} class="input" style="margin-top:8px" />
+        <MaterialIconPicker bind:value={eMaterialIcon} />
       </div>
       {/if}
 

@@ -2,6 +2,7 @@
 
 //! Onboarding wizard handlers for new staff members.
 //!
+//! GET   /api/me                      — return the authenticated user's own staff profile
 //! GET   /api/onboarding/status      — return current onboarding step and completion state
 //! PATCH /api/onboarding/profile     — update staff profile fields (name, job_title, bio, avatar_url)
 //! POST  /api/onboarding/signing-key — provision staff signing public key
@@ -14,10 +15,41 @@ use crate::middleware::auth::SessionContext;
 use crate::router::{DbError, ValidationError, WorkerError, error_to_response};
 
 // ---------------------------------------------------------------------------
-// GET /api/onboarding/status
+// GET /api/me
 // ---------------------------------------------------------------------------
 
-/// Return the current onboarding step and completion state for the
+/// Return the authenticated staff member's own profile record.
+///
+/// This is used by the admin profile settings page so users can view and
+/// update their own information after onboarding is complete.
+///
+/// Requirements: 4.4 (profile management)
+pub async fn get_me(
+    _req: &Request,
+    env: &Env,
+    ctx: SessionContext,
+) -> Result<Response> {
+    let db = env.d1("DB").map_err(|e| {
+        WorkerError::Db(DbError::Query(e.to_string()))
+    })?;
+
+    let row = db
+        .prepare(
+            "SELECT id, email, username, name, job_title, bio, avatar_url, role \
+             FROM staff WHERE id = ?1",
+        )
+        .bind(&[ctx.staff_id.clone().into()])?
+        .first::<serde_json::Value>(None)
+        .await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
+        .ok_or(WorkerError::NotFound)?;
+
+    Response::from_json(&row)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+
 /// authenticated staff member.
 ///
 /// Step derivation:

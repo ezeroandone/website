@@ -230,6 +230,7 @@
 
 <svelte:head>
   <title>Careers — eZeroAndOne Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
 </svelte:head>
 
 <section class="careers-page">
@@ -304,7 +305,7 @@
   {#if careers.length === 0}
     <GlassCard accentColor="green">
       <div class="empty-state">
-        <span class="empty-icon" aria-hidden="true">💼</span>
+        <span class="material-icons-outlined empty-icon" aria-hidden="true">work_outline</span>
         <p>No career listings yet. Create one to get started.</p>
       </div>
     </GlassCard>
@@ -400,7 +401,7 @@
   {#if applications.length === 0}
     <GlassCard accentColor="blue">
       <div class="empty-state">
-        <span class="empty-icon" aria-hidden="true">📋</span>
+        <span class="material-icons-outlined empty-icon" aria-hidden="true">assignment</span>
         <p>No applications yet.</p>
       </div>
     </GlassCard>

@@ -834,9 +834,12 @@ pub async fn list_staff(
 
     let results = db
         .prepare(
-            "SELECT id, email, username, name, job_title, bio, avatar_url, \
-             role, onboarding_completed, created_at, updated_at \
-             FROM staff ORDER BY created_at ASC",
+            "SELECT s.id, s.email, s.username, s.name, s.job_title, s.bio, s.avatar_url, \
+             s.role, s.onboarding_completed, s.created_at, s.updated_at, \
+             sl.status \
+             FROM staff s \
+             LEFT JOIN staff_lifecycle sl ON sl.staff_id = s.id \
+             ORDER BY s.created_at ASC",
         )
         .all()
         .await

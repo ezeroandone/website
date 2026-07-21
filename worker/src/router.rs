@@ -270,6 +270,15 @@ pub async fn router_dispatch(
         return onboarding_handlers::get_status(req, env, ctx).await;
     }
 
+    // GET /api/me — return the authenticated user's own staff record
+    if method == Method::Get && path == "/api/me" {
+        let ctx = match auth_middleware(req, env, Role::Staff).await {
+            Ok(ctx) => ctx,
+            Err(resp) => return Ok(resp),
+        };
+        return onboarding_handlers::get_me(req, env, ctx).await;
+    }
+
     // PATCH /api/onboarding/profile
     if method == Method::Patch && path == "/api/onboarding/profile" {
         let ctx = match auth_middleware(req, env, Role::Staff).await {

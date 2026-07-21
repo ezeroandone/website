@@ -148,6 +148,9 @@ pub struct StaffAdmin {
     pub onboarding_completed: bool,
     pub created_at: i64,
     pub updated_at: i64,
+    /// Lifecycle status joined from staff_lifecycle table (Probation | Confirmed | Inactive).
+    /// None when no lifecycle record exists yet.
+    pub status: Option<String>,
 }
 
 /// Social / professional profile links and ordering metadata for the team page.

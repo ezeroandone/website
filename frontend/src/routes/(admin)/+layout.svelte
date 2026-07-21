@@ -11,6 +11,7 @@
     { href: '/admin/careers',   label: 'Careers',   icon: 'work'       },
     { href: '/admin/content',   label: 'Content',   icon: 'edit_note'  },
     { href: '/admin/clients',   label: 'Clients',   icon: 'business'   },
+    { href: '/admin/profile',   label: 'My Profile', icon: 'manage_accounts' },
   ] as const;
 </script>
 
@@ -46,18 +47,25 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar" aria-hidden="true">
-          {data.session.email.charAt(0).toUpperCase()}
-        </div>
-        <div class="user-details">
-          <span class="user-email">{data.session.email}</span>
-          <span class="user-role">{data.session.role}</span>
-        </div>
-      </div>
-      <a href="/api/auth/logout" class="logout-btn" title="Sign out">
-        <span class="material-icons-outlined" aria-hidden="true">logout</span>
+      <a href="/" class="back-to-site" title="Back to public site">
+        <span class="material-icons-outlined" aria-hidden="true">home</span>
+        <span class="back-to-site-label">Back to site</span>
       </a>
+      <div class="footer-divider"></div>
+      <div class="footer-user-row">
+        <div class="user-info">
+          <div class="user-avatar" aria-hidden="true">
+            {data.session.email.charAt(0).toUpperCase()}
+          </div>
+          <div class="user-details">
+            <span class="user-email">{data.session.email}</span>
+            <span class="user-role">{data.session.role}</span>
+          </div>
+        </div>
+        <a href="/api/auth/logout" class="logout-btn" title="Sign out">
+          <span class="material-icons-outlined" aria-hidden="true">logout</span>
+        </a>
+      </div>
     </div>
   </aside>
 
@@ -185,10 +193,40 @@
   /* Footer */
   .sidebar-footer {
     display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 12px 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .back-to-site {
+    display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 14px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .back-to-site:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+  }
+
+  .back-to-site .material-icons-outlined { font-size: 1.05rem; }
+
+  .back-to-site-label { font-size: 0.8rem; }
+
+  .footer-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 6px 0;
   }
 
   .user-info {
@@ -197,6 +235,13 @@
     gap: 10px;
     flex: 1;
     min-width: 0;
+  }
+
+  .footer-user-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 2px;
   }
 
   .user-avatar {
