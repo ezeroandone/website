@@ -2,8 +2,10 @@
   /**
    * Full Material Icons Outlined picker with live search.
    * Renders a searchable grid of ~800 common Material Icons.
-   * The user can also type any icon name directly.
+   * The picker panel uses position:fixed so it works correctly inside
+   * scrollable modals or overflow:hidden containers.
    */
+  import { tick } from 'svelte';
 
   interface Props {
     value: string;
@@ -14,6 +16,11 @@
 
   let searchQuery = $state('');
   let showPicker = $state(false);
+
+  // Anchor element — used to position the fixed panel beneath the trigger
+  let triggerEl = $state<HTMLDivElement | null>(null);
+  // Computed panel position
+  let panelStyle = $state('');
 
   // Complete list of common Material Icons (ligature names)
   const ALL_ICONS: string[] = [
@@ -70,10 +77,10 @@
     'campaign','ads_click','sell','new_releases','star','star_border',
     // Science & Education
     'science','biotech','psychology','psychology_alt','neurology',
-    'calculate','functions','schema','category','class','school',
+    'calculate','functions','category','class','school',
     'auto_stories','menu_book','import_contacts','local_library',
     'workspace_premium','emoji_events','military_tech','verified',
-    'grade','stars','celebration','award_star','new_label',
+    'grade','stars','celebration',
     // Health & Medical
     'health_and_safety','medical_services','local_hospital','emergency',
     'vaccines','medication','thermostat','fitness_center','self_improvement',
@@ -86,39 +93,36 @@
     'terrain','landscape','forest','water','waves','wb_sunny','ac_unit',
     // Security & Privacy
     'security','lock','lock_open','https','gpp_good','gpp_bad','gpp_maybe',
-    'shield','verified_user','admin_panel_settings','manage_accounts',
-    'key','password','fingerprint','face_retouching_natural','policy',
-    'private_connectivity','no_encryption','enhanced_encryption',
+    'shield','verified_user','admin_panel_settings',
+    'key','password','fingerprint','policy',
+    'no_encryption','enhanced_encryption',
     // Alerts & Status
     'info','warning','error','error_outline','report','report_problem',
-    'help','help_outline','priority_high','notification_important',
+    'help','help_outline','priority_high',
     'circle','radio_button_checked','radio_button_unchecked','toggle_on',
     'toggle_off','power','power_off','flash_on','flash_off','offline_bolt',
     'hourglass_empty','hourglass_full','timer','timer_off','access_time',
     'schedule','event','event_available','event_busy','date_range',
     // Productivity & Tools
-    'task','task_alt','checklist','checklist_rtl','fact_check',
-    'playlist_add_check','rule','rule_folder','grading','rate_review',
-    'sticky_note_2','post_add','edit_note','draw','auto_fix_normal',
+    'task','task_alt','checklist','fact_check',
+    'playlist_add_check','rule','grading','rate_review',
+    'sticky_note_2','post_add','edit_note','draw',
     'text_fields','title','short_text','wrap_text','translate',
-    'language','public','explore','travel_explore','compass_calibration',
-    'rocket_launch','rocket','satellite','space_bar','bolt','electric_bolt',
-    'power_input','electrical_services','cable_car','connecting_airports',
+    'language','public','explore','travel_explore',
+    'rocket_launch','rocket','satellite','bolt','electric_bolt',
+    'electrical_services','connecting_airports',
     // Architecture & Design
-    'architecture','design_services','draw','foundation','roofing',
-    'deck','chair','table_restaurant','bed','bathtub','kitchen',
-    'living','meeting_room','stairs','elevator','escalator','door_front',
-    'window','garage','fence','yard','grass','local_florist','park',
-    'wb_shade','wb_twilight','light_mode','dark_mode','brightness_6',
+    'architecture','design_services','foundation','roofing',
+    'deck','meeting_room','stairs','elevator','door_front',
+    'window','garage','fence','yard','grass','local_florist',
+    'light_mode','dark_mode','brightness_6',
     // Misc & Symbols
     'favorite','favorite_border','thumb_up','thumb_down','sentiment_satisfied',
-    'sentiment_dissatisfied','mood','mood_bad','psychology','manage_search',
-    'center_focus_strong','crop_free','fullscreen','fullscreen_exit',
-    'picture_in_picture','fit_screen','aspect_ratio','straighten',
-    '360','3d_rotation','all_inclusive','autorenew','loop','repeat',
+    'sentiment_dissatisfied','mood','mood_bad','manage_search',
+    'fullscreen','fullscreen_exit','picture_in_picture','fit_screen',
+    'aspect_ratio','straighten','all_inclusive','autorenew','loop','repeat',
     'shuffle','compare','difference','merge','call_split','call_merge',
-    'alt_route','fork_right','fork_left','u_turn_right','u_turn_left',
-    'turn_right','turn_left','straight','roundabout_right',
+    'qr_code','qr_code_2','barcode','nfc',
   ];
 
   const filtered = $derived(
@@ -129,6 +133,36 @@
         )
   );
 
+  async function openPicker() {
+    showPicker = true;
+    await tick();
+    repositionPanel();
+  }
+
+  function repositionPanel() {
+    if (!triggerEl) return;
+    const rect = triggerEl.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const panelH = 360;
+
+    if (spaceBelow >= panelH || spaceBelow >= spaceAbove) {
+      // open downward
+      panelStyle = `top:${rect.bottom + 6}px;left:${rect.left}px;width:${rect.width}px;`;
+    } else {
+      // open upward
+      panelStyle = `bottom:${window.innerHeight - rect.top + 6}px;left:${rect.left}px;width:${rect.width}px;`;
+    }
+  }
+
+  function togglePicker() {
+    if (showPicker) {
+      showPicker = false;
+    } else {
+      openPicker();
+    }
+  }
+
   function select(icon: string) {
     value = icon;
     onchange?.(icon);
@@ -136,24 +170,43 @@
     searchQuery = '';
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') { showPicker = false; searchQuery = ''; }
+  function handleWindowKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape' && showPicker) {
+      showPicker = false;
+      searchQuery = '';
+    }
+  }
+
+  // Close when clicking outside the picker panel
+  function handleWindowClick(e: MouseEvent) {
+    if (!showPicker) return;
+    const target = e.target as Node;
+    const panel = document.getElementById('mip-panel');
+    if (triggerEl && !triggerEl.contains(target) && panel && !panel.contains(target)) {
+      showPicker = false;
+      searchQuery = '';
+    }
   }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleWindowKeydown} onclick={handleWindowClick} />
 
 <div class="icon-picker-wrap">
-  <!-- Current selection + toggle -->
-  <div class="icon-selected" role="button" tabindex="0"
-    onclick={() => (showPicker = !showPicker)}
-    onkeydown={(e) => e.key === 'Enter' && (showPicker = !showPicker)}>
+  <!-- Current selection + toggle trigger -->
+  <div
+    class="icon-selected"
+    role="button"
+    tabindex="0"
+    bind:this={triggerEl}
+    onclick={togglePicker}
+    onkeydown={(e) => e.key === 'Enter' && togglePicker()}
+  >
     <span class="material-icons-outlined preview-icon">{value || 'star'}</span>
     <span class="preview-name">{value || 'star'}</span>
     <span class="material-icons-outlined toggle-chevron">{showPicker ? 'expand_less' : 'expand_more'}</span>
   </div>
 
-  <!-- Also allow typing any icon name directly -->
+  <!-- Direct text entry for any icon name -->
   <input
     type="text"
     class="direct-input"
@@ -161,12 +214,17 @@
     bind:value
     oninput={() => onchange?.(value)}
   />
+</div>
 
-  <!-- Picker panel -->
-  {#if showPicker}
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="picker-backdrop" onclick={() => (showPicker = false)}></div>
-  <div class="picker-panel" role="dialog" aria-label="Icon picker">
+<!-- Picker panel rendered at document root via fixed positioning to escape modal overflow clipping -->
+{#if showPicker}
+  <div
+    id="mip-panel"
+    class="picker-panel"
+    role="dialog"
+    aria-label="Icon picker"
+    style={panelStyle}
+  >
     <div class="picker-search">
       <span class="material-icons-outlined search-icon">search</span>
       <input
@@ -177,7 +235,12 @@
         autofocus
       />
       {#if searchQuery}
-        <button class="clear-search" type="button" onclick={() => (searchQuery = '')} aria-label="Clear">
+        <button
+          class="clear-search"
+          type="button"
+          onclick={() => (searchQuery = '')}
+          aria-label="Clear search"
+        >
           <span class="material-icons-outlined">close</span>
         </button>
       {/if}
@@ -204,8 +267,7 @@
       {/if}
     </div>
   </div>
-  {/if}
-</div>
+{/if}
 
 <style>
   .icon-picker-wrap {
@@ -272,24 +334,14 @@
     outline: none !important;
   }
 
-  /* ── Backdrop ─────────────────────────────────────────────── */
-  .picker-backdrop {
+  /* ── Picker panel — fixed so it escapes overflow:hidden/auto containers ── */
+  :global(#mip-panel) {
     position: fixed;
-    inset: 0;
-    z-index: 49;
-  }
-
-  /* ── Picker panel ─────────────────────────────────────────── */
-  .picker-panel {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    z-index: 50;
+    z-index: 9999;
     background: #0d0d1a;
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.14);
     border-radius: 12px;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
     display: flex;
     flex-direction: column;
     max-height: 360px;
@@ -297,7 +349,7 @@
   }
 
   /* Search bar */
-  .picker-search {
+  :global(#mip-panel .picker-search) {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -306,13 +358,13 @@
     flex-shrink: 0;
   }
 
-  .search-icon {
+  :global(#mip-panel .search-icon) {
     font-size: 1.1rem;
     color: rgba(255,255,255,0.3);
     flex-shrink: 0;
   }
 
-  .search-input {
+  :global(#mip-panel .search-input) {
     flex: 1;
     background: transparent !important;
     border: none !important;
@@ -322,9 +374,10 @@
     outline: none !important;
     width: auto !important;
     box-shadow: none !important;
+    min-width: 0;
   }
 
-  .clear-search {
+  :global(#mip-panel .clear-search) {
     background: none;
     border: none;
     color: rgba(255,255,255,0.3);
@@ -335,11 +388,12 @@
     border-radius: 4px;
   }
 
-  .clear-search:hover { color: rgba(255,255,255,0.7); }
-  .clear-search .material-icons-outlined { font-size: 1rem; }
+  :global(#mip-panel .clear-search:hover) { color: rgba(255,255,255,0.7); }
+
+  :global(#mip-panel .clear-search .material-icons-outlined) { font-size: 1rem; }
 
   /* Count */
-  .picker-count {
+  :global(#mip-panel .picker-count) {
     padding: 4px 12px;
     font-size: 0.68rem;
     color: rgba(255,255,255,0.25);
@@ -348,7 +402,7 @@
   }
 
   /* Icon grid */
-  .picker-grid {
+  :global(#mip-panel .picker-grid) {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
     gap: 2px;
@@ -358,14 +412,14 @@
     scrollbar-color: rgba(255,255,255,0.1) transparent;
   }
 
-  .picker-grid::-webkit-scrollbar { width: 4px; }
-  .picker-grid::-webkit-scrollbar-track { background: transparent; }
-  .picker-grid::-webkit-scrollbar-thumb {
+  :global(#mip-panel .picker-grid::-webkit-scrollbar) { width: 4px; }
+  :global(#mip-panel .picker-grid::-webkit-scrollbar-track) { background: transparent; }
+  :global(#mip-panel .picker-grid::-webkit-scrollbar-thumb) {
     background: rgba(255,255,255,0.1);
     border-radius: 4px;
   }
 
-  .icon-btn {
+  :global(#mip-panel .icon-btn) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -380,21 +434,21 @@
     padding: 0;
   }
 
-  .icon-btn:hover {
+  :global(#mip-panel .icon-btn:hover) {
     background: rgba(255,255,255,0.07);
     color: #fff;
     border-color: rgba(255,255,255,0.1);
   }
 
-  .icon-btn.active {
+  :global(#mip-panel .icon-btn.active) {
     background: rgba(0,194,255,0.15);
     color: #00C2FF;
     border-color: rgba(0,194,255,0.4);
   }
 
-  .icon-btn .material-icons-outlined { font-size: 1.3rem; }
+  :global(#mip-panel .icon-btn .material-icons-outlined) { font-size: 1.3rem; }
 
-  .no-results {
+  :global(#mip-panel .no-results) {
     grid-column: 1 / -1;
     text-align: center;
     color: rgba(255,255,255,0.3);
