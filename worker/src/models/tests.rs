@@ -161,54 +161,51 @@ fn arb_staff() -> impl Strategy<Value = Staff> {
 
 /// Strategy for a full `Post` instance.
 fn arb_post() -> impl Strategy<Value = Post> {
-    // proptest tuples cap at 12 — chain two prop_flat_map calls.
+    // proptest tuples cap at 12 — use a struct-building closure to avoid large tuples.
     (
-        arb_string(),         // id
+        arb_string(),    // id
         arb_post_type(),
-        arb_string(),         // slug
-        arb_string(),         // title
-        arb_string(),         // summary
-        arb_string(),         // body_md
-        arb_opt_string(),     // author_id
+        arb_string(),    // slug
+        arb_string(),    // title
+        arb_string(),    // summary
+        arb_string(),    // body_md
+        arb_opt_string(), // author_id
         prop_oneof![Just(None), arb_timestamp().prop_map(Some)], // published_at
-        arb_timestamp(),      // updated_at
-        any::<bool>(),        // published
+        arb_timestamp(), // updated_at
+        any::<bool>(),   // published
     )
     .prop_flat_map(|(id, post_type, slug, title, summary, body_md, author_id,
                      published_at, updated_at, published)| {
-        // First extension: 3 new string fields
+        // 6 new fields, kept in a separate tuple (≤ 12)
         (
-            Just(id), Just(post_type), Just(slug), Just(title), Just(summary),
-            Just(body_md), Just(author_id), Just(published_at), Just(updated_at),
-            Just(published),
             arb_string(), // featured_image_url
             arb_string(), // category
-        )
-    })
-    .prop_flat_map(|(id, post_type, slug, title, summary, body_md, author_id,
-                     published_at, updated_at, published,
-                     featured_image_url, category)| {
-        // Second extension: 4 remaining fields
-        (
-            Just(id), Just(post_type), Just(slug), Just(title), Just(summary),
-            Just(body_md), Just(author_id), Just(published_at), Just(updated_at),
-            Just(published), Just(featured_image_url), Just(category),
             arb_string(), // tags
             arb_string(), // project_type
             arb_string(), // technologies
             arb_string(), // material_icon
         )
-    })
-    .prop_map(|(id, post_type, slug, title, summary, body_md, author_id,
-                published_at, updated_at, published,
-                featured_image_url, category,
-                tags, project_type, technologies, material_icon)| {
-        Post {
-            id, post_type, slug, title, summary, body_md, author_id,
-            published_at, updated_at, published,
-            featured_image_url, category, tags,
-            project_type, technologies, material_icon,
-        }
+        .prop_map(move |(featured_image_url, category, tags,
+                         project_type, technologies, material_icon)| {
+            Post {
+                id: id.clone(),
+                post_type,
+                slug: slug.clone(),
+                title: title.clone(),
+                summary: summary.clone(),
+                body_md: body_md.clone(),
+                author_id: author_id.clone(),
+                published_at,
+                updated_at,
+                published,
+                featured_image_url,
+                category,
+                tags,
+                project_type,
+                technologies,
+                material_icon,
+            }
+        })
     })
 }
 
