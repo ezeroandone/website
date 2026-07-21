@@ -279,3 +279,53 @@ input::placeholder,
 textarea::placeholder {
 	color: var(--text-muted);
 }
+
+/* ── Scrollbar theme ───────────────────────────────────────── */
+/* Firefox */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+	width: 4px;
+	height: 4px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(255,255,255,0.12);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(255,255,255,0.24);
+}
+
+::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+/* ── Admin-scoped overrides ────────────────────────────────── */
+/* Ensures native select dropdowns render dark on all platforms */
+[data-theme="dark"] select,
+.admin-shell select {
+	color-scheme: dark;
+	background-color: #0a0a14;
+	color: #f0f0f0;
+}
+
+select option {
+	background-color: #0a0a14;
+	color: #f0f0f0;
+}
+
+select option:checked,
+select option:hover {
+	background-color: #1a1a2e;
+	color: #ffffff;
+}
