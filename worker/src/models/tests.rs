@@ -161,7 +161,7 @@ fn arb_staff() -> impl Strategy<Value = Staff> {
 
 /// Strategy for a full `Post` instance.
 fn arb_post() -> impl Strategy<Value = Post> {
-    // proptest tuples are capped at 12 — nest two groups.
+    // proptest tuples cap at 12 — chain two prop_flat_map calls.
     (
         arb_string(),         // id
         arb_post_type(),
@@ -173,14 +173,26 @@ fn arb_post() -> impl Strategy<Value = Post> {
         prop_oneof![Just(None), arb_timestamp().prop_map(Some)], // published_at
         arb_timestamp(),      // updated_at
         any::<bool>(),        // published
-    ).prop_flat_map(|(id, post_type, slug, title, summary, body_md, author_id,
-                      published_at, updated_at, published)| {
+    )
+    .prop_flat_map(|(id, post_type, slug, title, summary, body_md, author_id,
+                     published_at, updated_at, published)| {
+        // First extension: 3 new string fields
         (
             Just(id), Just(post_type), Just(slug), Just(title), Just(summary),
             Just(body_md), Just(author_id), Just(published_at), Just(updated_at),
             Just(published),
             arb_string(), // featured_image_url
             arb_string(), // category
+        )
+    })
+    .prop_flat_map(|(id, post_type, slug, title, summary, body_md, author_id,
+                     published_at, updated_at, published,
+                     featured_image_url, category)| {
+        // Second extension: 4 remaining fields
+        (
+            Just(id), Just(post_type), Just(slug), Just(title), Just(summary),
+            Just(body_md), Just(author_id), Just(published_at), Just(updated_at),
+            Just(published), Just(featured_image_url), Just(category),
             arb_string(), // tags
             arb_string(), // project_type
             arb_string(), // technologies
@@ -189,8 +201,8 @@ fn arb_post() -> impl Strategy<Value = Post> {
     })
     .prop_map(|(id, post_type, slug, title, summary, body_md, author_id,
                 published_at, updated_at, published,
-                featured_image_url, category, tags,
-                project_type, technologies, material_icon)| {
+                featured_image_url, category,
+                tags, project_type, technologies, material_icon)| {
         Post {
             id, post_type, slug, title, summary, body_md, author_id,
             published_at, updated_at, published,
