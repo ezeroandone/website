@@ -6,12 +6,17 @@
   let { data, children }: LayoutProps = $props();
 
   const navItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: '⬛' },
-    { href: '/admin/staff',     label: 'Staff',     icon: '👤' },
-    { href: '/admin/careers',   label: 'Careers',   icon: '💼' },
-    { href: '/admin/content',   label: 'Content',   icon: '📄' },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { href: '/admin/staff',     label: 'Staff',     icon: 'group' },
+    { href: '/admin/careers',   label: 'Careers',   icon: 'work' },
+    { href: '/admin/content',   label: 'Content',   icon: 'edit_note' },
+    { href: '/admin/clients',   label: 'Clients',   icon: 'business' },
   ] as const;
 </script>
+
+<svelte:head>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+</svelte:head>
 
 <div class="admin-shell" data-theme={$theme}>
   <!-- Sidebar navigation -->
@@ -29,7 +34,7 @@
           class:active={$page.url.pathname.startsWith(item.href)}
           aria-current={$page.url.pathname.startsWith(item.href) ? 'page' : undefined}
         >
-          <span class="nav-icon" aria-hidden="true">{item.icon}</span>
+          <span class="material-icons-outlined nav-icon" aria-hidden="true">{item.icon}</span>
           <span class="nav-label">{item.label}</span>
         </a>
       {/each}
@@ -125,9 +130,16 @@
   }
 
   .nav-icon {
-    font-size: 1rem;
-    width: 20px;
+    font-size: 1.25rem;
+    width: 22px;
     text-align: center;
+    flex-shrink: 0;
+    /* White outline styling for Material Icons */
+    -webkit-text-stroke: 0.3px rgba(255, 255, 255, 0.4);
+  }
+
+  .nav-link.active .nav-icon {
+    -webkit-text-stroke: 0.3px currentColor;
   }
 
   .nav-label {
