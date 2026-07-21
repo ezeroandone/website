@@ -2,7 +2,6 @@
   import GlassCard from '$lib/components/GlassCard.svelte';
   import type { PageProps } from './$types';
 
-  // data comes from the admin layout server load (session is on layout data)
   let { data }: PageProps = $props();
 
   const quickLinks = [
@@ -11,21 +10,28 @@
       title: 'Staff Registry',
       description: 'Manage engineer profiles, assign roles, and advance lifecycle status.',
       accent: 'blue',
-      icon: '👤',
+      icon: 'group',
     },
     {
       href: '/admin/careers',
       title: 'Active Operations',
       description: 'Publish deployment listings and process the full applicant pipeline.',
       accent: 'green',
-      icon: '💼',
+      icon: 'work',
     },
     {
       href: '/admin/content',
       title: 'Content Engine',
       description: 'Author and publish insights, case studies, and capability deep-dives.',
       accent: 'yellow',
-      icon: '📄',
+      icon: 'edit_note',
+    },
+    {
+      href: '/admin/clients',
+      title: 'Client Logos',
+      description: 'Manage brand logos and partner marks displayed on the site.',
+      accent: 'red',
+      icon: 'business',
     },
   ] as const satisfies ReadonlyArray<{
     href: string;
@@ -38,6 +44,7 @@
 
 <svelte:head>
   <title>Dashboard — eZeroAndOne Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
 </svelte:head>
 
 <section class="dashboard">
@@ -51,7 +58,7 @@
       <a href={link.href} class="card-link" aria-label="Navigate to {link.title}">
         <GlassCard accentColor={link.accent}>
           <div class="card-body">
-            <span class="card-icon" aria-hidden="true">{link.icon}</span>
+            <span class="material-icons-outlined card-icon" aria-hidden="true">{link.icon}</span>
             <div class="card-text">
               <h2 class="card-title">{link.title}</h2>
               <p class="card-description">{link.description}</p>
@@ -64,13 +71,9 @@
 </section>
 
 <style>
-  .dashboard {
-    max-width: 960px;
-  }
+  .dashboard { max-width: 960px; }
 
-  .dashboard-header {
-    margin-bottom: 32px;
-  }
+  .dashboard-header { margin-bottom: 32px; }
 
   .dashboard-title {
     font-size: 2rem;
@@ -91,7 +94,6 @@
     font-weight: 600;
   }
 
-  /* ── Cards ───────────────────────────────────────────────── */
   .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -104,10 +106,6 @@
     color: inherit;
   }
 
-  .card-link:hover {
-    text-decoration: none;
-  }
-
   .card-body {
     display: flex;
     align-items: flex-start;
@@ -116,15 +114,22 @@
   }
 
   .card-icon {
-    font-size: 1.75rem;
+    font-size: 2rem;
     flex-shrink: 0;
     line-height: 1;
+    color: var(--color-text-secondary, #888899);
+    /* White outline effect via text-stroke / drop-shadow */
+    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.6);
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.15));
+    transition: color 0.2s ease, filter 0.2s ease;
   }
 
-  .card-text {
-    flex: 1;
-    min-width: 0;
+  .card-link:hover .card-icon {
+    color: var(--color-text-primary, #f0f0f0);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
   }
+
+  .card-text { flex: 1; min-width: 0; }
 
   .card-title {
     font-size: 1.1rem;

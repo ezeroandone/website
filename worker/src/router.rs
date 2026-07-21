@@ -471,6 +471,15 @@ pub async fn router_dispatch(
         return admin_handlers::list_staff(req, env, ctx).await;
     }
 
+    // GET /api/admin/content  (list all posts incl. drafts)
+    if method == Method::Get && path == "/api/admin/content" {
+        let ctx = match auth_middleware(req, env, Role::Admin).await {
+            Ok(ctx) => ctx,
+            Err(resp) => return Ok(resp),
+        };
+        return admin_handlers::list_content(req, env, ctx).await;
+    }
+
     // POST /api/admin/content
     if method == Method::Post && path == "/api/admin/content" {
         let ctx = match auth_middleware(req, env, Role::Admin).await {

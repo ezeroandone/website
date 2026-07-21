@@ -859,6 +859,38 @@ pub async fn list_staff(
 use std::result::Result as StdResult;
 
 // ---------------------------------------------------------------------------
+// GET /api/admin/content
+// ---------------------------------------------------------------------------
+
+/// List ALL posts (including drafts) ordered by updated_at DESC.
+///
+/// Requires Admin role (enforced by router).
+pub async fn list_content(_req: &Request, env: &Env, _ctx: SessionContext) -> Result<Response> {
+    let db = env
+        .d1("DB")
+        .map_err(|e| WorkerError::Internal(e.to_string()))?;
+
+    let results = db
+        .prepare(
+            "SELECT id, type, slug, title, summary, body_md, author_id, \
+             published_at, updated_at, published, \
+             featured_image_url, category, tags, project_type, technologies, material_icon \
+             FROM post ORDER BY updated_at DESC",
+        )
+        .all()
+        .await
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+
+    let posts: Vec<serde_json::Value> = results
+        .results::<serde_json::Value>()
+        .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
+
+    Response::from_json(&posts)
+        .map(|r| r.with_status(200))
+        .map_err(|e| WorkerError::Internal(e.to_string()).into())
+}
+
+// ---------------------------------------------------------------------------
 // POST /api/admin/content
 // ---------------------------------------------------------------------------
 
