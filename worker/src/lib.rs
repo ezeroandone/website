@@ -16,15 +16,10 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         return middleware::cors::cors_preflight_response();
     }
 
-    // Rate limiting
-    let ip = req
-        .headers()
-        .get("CF-Connecting-IP")?
-        .unwrap_or_else(|| "unknown".to_string());
-    let kv = env.kv("EZO_AUTH")?;
-    if let Err(e) = middleware::rate_limit::rate_limit_check(&kv, &ip).await {
-        return router::error_to_response(e);
-    }
+    // Rate limiting is applied only in the auth request handler
+    // (POST /api/auth/request) to prevent magic-link spam.
+    // Do NOT apply it globally — page loads make many parallel API calls
+    // that would exhaust a per-IP quota instantly.
 
     // Session context (may be None for public routes)
     let session_ctx = middleware::auth::parse_session_context(&req, &env).await;

@@ -2,8 +2,8 @@ use worker::kv::KvStore;
 
 use crate::router::WorkerError;
 
-const MAX_REQUESTS: u32 = 5;
-const WINDOW_SECS: u64 = 60;
+const MAX_REQUESTS: u32 = 10;
+const WINDOW_SECS: u64 = 900; // 15 minutes
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq)]
 pub(crate) struct RateEntry {
@@ -102,11 +102,11 @@ mod tests {
 
     // ── Deterministic unit tests ─────────────────────────────────────────────
 
-    /// Requests 1–5 within the same window must all be allowed.
+    /// Requests 1–10 within the same window must all be allowed.
     #[test]
     fn five_requests_in_window_all_allowed() {
         let mut entry: Option<RateEntry> = None;
-        for i in 1..=5 {
+        for i in 1..=10 {
             let (new_entry, allowed) = rate_limit_check_inner(entry, T0);
             assert!(
                 allowed,
@@ -118,18 +118,18 @@ mod tests {
         }
     }
 
-    /// The 6th request in the same 60-second window must be rate-limited.
+    /// The 11th request in the same 15-minute window must be rate-limited.
     #[test]
     fn sixth_request_in_window_is_rate_limited() {
         let mut entry: Option<RateEntry> = None;
-        // Make 5 allowed requests.
-        for _ in 1..=5 {
+        // Make 10 allowed requests.
+        for _ in 1..=10 {
             let (new_entry, _) = rate_limit_check_inner(entry, T0);
             entry = Some(new_entry);
         }
-        // 6th request in the same window.
+        // 11th request in the same window.
         let (_, allowed) = rate_limit_check_inner(entry, T0);
-        assert!(!allowed, "6th request in same window must be rate-limited");
+        assert!(!allowed, "11th request in same window must be rate-limited");
     }
 
     /// After exactly WINDOW_SECS have elapsed the counter resets and the
