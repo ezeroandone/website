@@ -140,17 +140,7 @@
         ease: 'none',
       });
 
-      // Client logos auto-scroll animation
-      const track = document.querySelector('.clients-track') as HTMLElement;
-      if (track) {
-        gsap.to(track, {
-          xPercent: -50,
-          duration: 28,
-          ease: 'none',
-          repeat: -1,
-          modifiers: { xPercent: gsap.utils.wrap(-50, 0) }
-        });
-      }
+      // Client logos — handled by CSS @keyframes animation, no GSAP needed
 
     } catch (e) {
       // GSAP not available (SSR or missing module) — graceful degradation
@@ -173,7 +163,7 @@
     <div class="hero-left">
       <p class="hero-eyebrow">
         <span class="eyebrow-dot" aria-hidden="true"></span>
-        Cloudflare-native · First principles engineering
+        Nigeria's edge-native technology partner
       </p>
 
       <h1 id="hero-h1" class="hero-h1">
@@ -183,15 +173,14 @@
       </h1>
 
       <p class="hero-sub">
-        Every breakthrough digital platform begins with a single electron — a zero or a one.
-        We reduce complex business problems to their simplest form, then build scalable,
-        secure systems that compound in value over time.
+        From first principles. Every breakthrough platform starts as a zero or a one.
+        We reduce complex business problems to their simplest form, then build
+        scalable, secure systems that last.
       </p>
 
       <div class="hero-ctas">
         <a href="/capabilities" class="btn btn-primary hero-cta-primary">
-          Initialize Project
-          <span aria-hidden="true">→</span>
+          Initialize Project <span aria-hidden="true">→</span>
         </a>
         <a href="#what-we-do" class="btn btn-secondary hero-cta-secondary">
           What We Do
@@ -206,22 +195,12 @@
         </a>
       {/if}
 
-      <!-- Trust signals -->
       <div class="hero-trust">
-        <span class="trust-item">
-          <span class="trust-icon" aria-hidden="true">✓</span>
-          NDPR Compliant
-        </span>
+        <span class="trust-item"><span class="trust-icon" aria-hidden="true">✓</span> NDPR Compliant</span>
         <span class="trust-sep" aria-hidden="true">·</span>
-        <span class="trust-item">
-          <span class="trust-icon" aria-hidden="true">✓</span>
-          ISO 27001 Aligned
-        </span>
+        <span class="trust-item"><span class="trust-icon" aria-hidden="true">✓</span> ISO 27001 Aligned</span>
         <span class="trust-sep" aria-hidden="true">·</span>
-        <span class="trust-item">
-          <span class="trust-icon" aria-hidden="true">✓</span>
-          Edge-Native Architecture
-        </span>
+        <span class="trust-item"><span class="trust-icon" aria-hidden="true">✓</span> 24h Response</span>
       </div>
     </div>
 
@@ -379,9 +358,14 @@
       {#each data.insights as post}
         <GlassCard accentColor="green">
           <a href="/insights/{post.slug}" class="card-link insight-card">
+            {#if post.featured_image_url}
+              <div class="card-thumb">
+                <img src={post.featured_image_url} alt={post.title} loading="lazy" />
+                <div class="card-thumb-overlay"></div>
+              </div>
+            {/if}
             <div class="card-body">
               {#if post.category}<span class="card-tag card-tag--green">{post.category}</span>{/if}
-              <span class="material-symbols-outlined card-type-icon" aria-hidden="true">article</span>
               <h3>{post.title}</h3>
               <p>{post.summary}</p>
               {#if post.author}
@@ -495,14 +479,15 @@
 
   /* ── HERO ──────────────────────────────────────────── */
   .hero {
-    min-height: 100svh;
+    height: calc(100svh - var(--header-height, 64px));
+    max-height: calc(100svh - var(--header-height, 64px));
+    min-height: 560px;
     display: flex; align-items: center;
-    padding: 5rem 0 3rem;
+    padding: 2rem 0;
     overflow: hidden;
     position: relative;
   }
 
-  /* Subtle radial glow behind brain */
   .hero::after {
     content: '';
     position: absolute; inset: 0; pointer-events: none;
@@ -512,8 +497,9 @@
   .hero-inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    gap: 3rem;
     align-items: center;
+    height: 100%;
   }
 
   .hero-left {
@@ -522,22 +508,22 @@
 
   .hero-eyebrow {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    font-family: var(--font-heading); font-size: 0.7rem; font-weight: 700;
+    font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-blue-hi);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .eyebrow-dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-blue-hi);
-    animation: pulse-dot 2s ease-in-out infinite;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent-blue-hi);
+    animation: pulse-dot 2s ease-in-out infinite; flex-shrink: 0;
   }
 
   @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
   .hero-h1 {
-    font-size: clamp(2.8rem, 5.5vw, 5.5rem); font-weight: 900;
-    letter-spacing: -0.055em; line-height: 0.95; color: #fff;
-    margin: 0 0 1.75rem;
+    font-size: clamp(2rem, 4vw, 4rem); font-weight: 900;
+    letter-spacing: -0.05em; line-height: 0.97; color: #fff;
+    margin: 0 0 1.25rem;
   }
 
   .hero-h1-accent {
@@ -547,18 +533,18 @@
   }
 
   .hero-sub {
-    font-family: var(--font-body); font-size: clamp(0.95rem, 1.5vw, 1.1rem);
-    line-height: 1.8; color: var(--text-secondary);
-    max-width: 480px; margin: 0 0 2.5rem;
+    font-family: var(--font-body); font-size: clamp(0.85rem, 1.2vw, 0.98rem);
+    line-height: 1.75; color: var(--text-secondary);
+    max-width: 440px; margin: 0 0 1.75rem;
   }
 
   .hero-ctas {
-    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem;
+    display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem;
   }
 
   .hero-cta-primary {
     background: var(--accent-blue); color: #fff;
-    padding: 0.85rem 2rem; font-size: 0.85rem;
+    padding: 0.7rem 1.75rem; font-size: 0.8rem;
     letter-spacing: 0.06em; font-weight: 700;
     position: relative; overflow: hidden;
     transition: all 0.3s var(--ease-out-expo);
@@ -575,7 +561,7 @@
 
   .hero-cta-secondary {
     border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.8);
-    padding: 0.85rem 1.75rem; font-size: 0.85rem; letter-spacing: 0.06em;
+    padding: 0.7rem 1.5rem; font-size: 0.8rem; letter-spacing: 0.06em;
     transition: all 0.3s var(--ease-out-expo);
   }
 
@@ -583,33 +569,31 @@
 
   .hero-badge {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    font-family: var(--font-body); font-size: 0.78rem; font-weight: 500;
+    font-family: var(--font-body); font-size: 0.72rem; font-weight: 500;
     color: var(--accent-green); border: 1px solid rgba(0,230,118,0.2);
-    border-radius: 100px; padding: 0.3rem 0.85rem;
-    text-decoration: none; margin-bottom: 1.5rem;
+    border-radius: 100px; padding: 0.25rem 0.8rem;
+    text-decoration: none; margin-bottom: 1.25rem;
     transition: var(--transition-std);
   }
 
   .hero-badge:hover { background: rgba(0,230,118,0.06); text-decoration: none; }
 
   .live-dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green);
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent-green);
     animation: pulse-dot 2s ease-in-out infinite; flex-shrink: 0;
   }
 
   .hero-trust {
-    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-    font-family: var(--font-body); font-size: 0.72rem;
-    color: rgba(255,255,255,0.35);
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    font-family: var(--font-body); font-size: 0.68rem;
+    color: rgba(255,255,255,0.32);
   }
 
-  .trust-item { display: flex; align-items: center; gap: 0.3rem; }
-  .trust-icon { color: var(--accent-green); font-size: 0.75rem; }
-  .trust-sep  { color: rgba(255,255,255,0.2); }
+  .trust-item { display: flex; align-items: center; gap: 0.25rem; }
+  .trust-icon { color: var(--accent-green); font-size: 0.7rem; }
+  .trust-sep  { color: rgba(255,255,255,0.15); }
 
-  .hero-right {
-    height: 580px; position: relative;
-  }
+  .hero-right { height: 100%; position: relative; min-height: 400px; }
 
   .hero-brain-placeholder {
     width: 100%; height: 100%;
@@ -619,13 +603,13 @@
 
   /* ── CLIENT LOGOS ──────────────────────────────────── */
   .clients-bar {
-    padding: 2rem 0; overflow: hidden;
+    padding: 1.75rem 0; overflow: hidden;
     border-top: 1px solid rgba(255,255,255,0.05);
     border-bottom: 1px solid rgba(255,255,255,0.05);
     background: rgba(255,255,255,0.015);
   }
 
-  .clients-inner { display: flex; align-items: center; gap: 2rem; }
+  .clients-inner { display: flex; align-items: center; gap: 2rem; overflow: hidden; }
 
   .clients-label {
     font-family: var(--font-heading); font-size: 0.62rem; font-weight: 700;
@@ -635,23 +619,33 @@
 
   .clients-track-wrap {
     overflow: hidden; flex: 1;
-    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
   }
 
+  /* Pure CSS infinite scroll — no JS dependency */
   .clients-track {
-    display: flex; align-items: center; gap: 3.5rem; width: max-content;
+    display: flex; align-items: center; gap: 3.5rem;
+    width: max-content;
+    animation: logos-scroll 30s linear infinite;
+  }
+
+  .clients-track:hover { animation-play-state: paused; }
+
+  @keyframes logos-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 
   .client-logo-link {
     display: flex; align-items: center; flex-shrink: 0;
-    opacity: 0.4; transition: opacity 0.25s; text-decoration: none;
+    opacity: 0.45; transition: opacity 0.25s; text-decoration: none;
   }
 
-  .client-logo-link:hover { opacity: 0.8; }
+  .client-logo-link:hover { opacity: 0.85; }
 
   .client-logo {
-    height: 32px; width: auto; max-width: 120px; object-fit: contain;
+    height: 30px; width: auto; max-width: 110px; object-fit: contain;
     filter: brightness(0) invert(1);
   }
 
@@ -894,22 +888,24 @@
 
   /* ── RESPONSIVE ────────────────────────────────────── */
   @media (max-width: 1100px) {
-    .hero-inner      { grid-template-columns: 1fr; gap: 2rem; }
-    .hero-right      { height: 380px; }
+    .hero-inner      { grid-template-columns: 1fr; gap: 1.5rem; }
+    .hero-right      { min-height: 320px; height: 320px; }
     .pillars-grid    { grid-template-columns: 1fr 1fr; }
     .phil-grid       { grid-template-columns: 1fr; gap: 3rem; }
     .phil-right      { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 2rem; }
     .intake-grid     { grid-template-columns: 1fr; gap: 3rem; }
+    .hero            { height: auto; min-height: calc(100svh - var(--header-height, 64px)); padding: 2.5rem 0; }
   }
 
   @media (max-width: 640px) {
-    .hero { padding: 3rem 0 2rem; }
-    .hero-h1 { font-size: 2.5rem; }
-    .hero-right { height: 300px; }
+    .hero { padding: 1.5rem 0; }
+    .hero-h1 { font-size: 2rem; }
+    .hero-right { min-height: 260px; height: 260px; }
     .pillars-grid { grid-template-columns: 1fr; }
     .hero-ctas    { flex-direction: column; align-items: flex-start; }
     .form-row     { grid-template-columns: 1fr; }
     .intake-form-wrap { padding: 1.5rem; }
     .intake-proof { gap: 1.25rem; }
+    .clients-label { display: none; }
   }
 </style>

@@ -171,20 +171,82 @@
       }
     }
 
-    // ── Animate ────────────────────────────────────────────────────
+    // ── Brain enclosure mesh ───────────────────────────────────────
+    // A semi-transparent ellipsoid shell that encloses the neuron network,
+    // giving the visual impression of a brain boundary
+    const brainShellGeo = new THREE.SphereGeometry(2.3, 48, 48);
+
+    // Displace vertices to create a lobe-like brain outline
+    const posAttr = brainShellGeo.attributes.position;
+    for (let i = 0; i < posAttr.count; i++) {
+      const x = posAttr.getX(i);
+      const y = posAttr.getY(i);
+      const z = posAttr.getZ(i);
+      // Scale to hemisphere proportions (wider X, narrower Z)
+      posAttr.setXYZ(i, x * 1.15, y * 1.0, z * 0.85);
+    }
+    brainShellGeo.computeVertexNormals();
+
+    // Outer glow shell — very transparent cyan wireframe
+    const brainWireMat = new THREE.MeshBasicMaterial({
+      color: 0x00c2ff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.06,
+    });
+    const brainWireMesh = new THREE.Mesh(brainShellGeo, brainWireMat);
+    brainWireMesh.position.y = 0.1;
+    scene.add(brainWireMesh);
+
+    // Inner surface — frosted glass look
+    const brainSurfaceGeo = new THREE.SphereGeometry(2.25, 32, 32);
+    const surfacePos = brainSurfaceGeo.attributes.position;
+    for (let i = 0; i < surfacePos.count; i++) {
+      surfacePos.setXYZ(i,
+        surfacePos.getX(i) * 1.15,
+        surfacePos.getY(i) * 1.0,
+        surfacePos.getZ(i) * 0.85,
+      );
+    }
+    brainSurfaceGeo.computeVertexNormals();
+
+    const brainSurfaceMat = new THREE.MeshPhongMaterial({
+      color: 0x003355,
+      emissive: 0x000822,
+      transparent: true,
+      opacity: 0.08,
+      side: THREE.BackSide, // render inside-out so it doesn't occlude nodes
+      shininess: 60,
+    });
+    const brainSurfaceMesh = new THREE.Mesh(brainSurfaceGeo, brainSurfaceMat);
+    brainSurfaceMesh.position.y = 0.1;
+    scene.add(brainSurfaceMesh);
+
+    // Store refs to animate shell with node group
+    nodeGroup.userData.wireMesh    = brainWireMesh;
+    nodeGroup.userData.surfaceMesh = brainSurfaceMesh;
     const animate = () => {
       animFrame = requestAnimationFrame(animate);
       const t   = clock.getElapsedTime();
-      const dt  = clock.getDelta();
+      clock.getDelta(); // consume delta
 
-      // Slow gentle auto-rotate around Y
-      nodeGroup.rotation.y     = t * 0.07;
-      edgeGroup.rotation.y     = t * 0.07;
-      electronGroup.rotation.y = t * 0.07;
-      // Subtle tilt oscillation
-      nodeGroup.rotation.x     = Math.sin(t * 0.18) * 0.08;
-      edgeGroup.rotation.x     = Math.sin(t * 0.18) * 0.08;
-      electronGroup.rotation.x = Math.sin(t * 0.18) * 0.08;
+      // Slow gentle rotation — sync all groups + brain shell
+      const rotY = t * 0.07;
+      const rotX = Math.sin(t * 0.18) * 0.08;
+      nodeGroup.rotation.y     = rotY;
+      edgeGroup.rotation.y     = rotY;
+      electronGroup.rotation.y = rotY;
+      nodeGroup.rotation.x     = rotX;
+      edgeGroup.rotation.x     = rotX;
+      electronGroup.rotation.x = rotX;
+
+      // Sync brain shell meshes
+      const wire    = nodeGroup.userData.wireMesh;
+      const surface = nodeGroup.userData.surfaceMesh;
+      if (wire)    { wire.rotation.y = rotY;    wire.rotation.x = rotX; }
+      if (surface) { surface.rotation.y = rotY; surface.rotation.x = rotX; }
+      if (wire)    (wire.material as any).opacity    = powered ? 0.14 : 0.06;
+      if (surface) (surface.material as any).opacity = powered ? 0.14 : 0.07;
 
       // Node pulse
       nodes.forEach(nd => {

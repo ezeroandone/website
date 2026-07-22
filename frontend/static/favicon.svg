@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" fill="#000000"/>
-  <text x="4" y="22" font-family="Inter Tight, Inter, system-ui, sans-serif" font-weight="800" font-size="13" letter-spacing="-1" fill="#ffffff">e<tspan fill="#00C2FF">0</tspan>&amp;<tspan fill="#00C2FF">1</tspan></text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="10" fill="#000000"/>
+  <!-- e -->
+  <text x="4" y="38" font-family="Inter Tight,Inter,system-ui,sans-serif" font-weight="900" font-size="22" fill="#ffffff">e</text>
+  <!-- 0 accent -->
+  <text x="18" y="38" font-family="Inter Tight,Inter,system-ui,sans-serif" font-weight="900" font-size="22" fill="#00C2FF">0</text>
+  <!-- & -->
+  <text x="30" y="38" font-family="Inter Tight,Inter,system-ui,sans-serif" font-weight="900" font-size="22" fill="#ffffff">&amp;</text>
+  <!-- 1 accent -->
+  <text x="43" y="38" font-family="Inter Tight,Inter,system-ui,sans-serif" font-weight="900" font-size="22" fill="#00C2FF">1</text>
+  <!-- .io -->
+  <text x="7" y="52" font-family="Inter Tight,Inter,system-ui,sans-serif" font-weight="600" font-size="10" letter-spacing="0.5" fill="rgba(255,255,255,0.45)">eZeroAndOne.io</text>
+  <!-- accent line -->
+  <rect x="4" y="55" width="56" height="2" rx="1" fill="#00C2FF" opacity="0.6"/>
 </svg>

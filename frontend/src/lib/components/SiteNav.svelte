@@ -22,8 +22,8 @@
 
 <FloatingHeader>
   <nav class="nav-inner">
-    <a href="/" class="brand" aria-label="eZeroAndOne home">
-      e<span class="brand-accent">0</span>&amp;<span class="brand-accent">1</span>
+    <a href="/" class="brand" aria-label="eZeroAndOne.io home">
+      e<span class="brand-accent">0</span>&amp;<span class="brand-accent">1</span><span class="brand-tld">.io</span>
     </a>
     <ul class="nav-links" role="list">
       {#each navLinks as link}
@@ -67,6 +67,7 @@
   }
   .nav-links a:hover,
   .nav-links a[aria-current="page"] { color: #fff; text-decoration: none; }
+  .brand-tld { color: rgba(255,255,255,0.35); font-size: 0.85em; }
   .nav-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
   .nav-signin { padding: 0.45rem 1rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.35rem; }
   .nav-cta    { padding: 0.45rem 1.25rem; font-size: 0.75rem; }
