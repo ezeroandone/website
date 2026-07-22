@@ -338,7 +338,6 @@
                       </button>
                     {/if}
                   </div>
-                  </div>
 
                   <!-- Inline action feedback message -->
                   {#if actionMessages[member.id]}
