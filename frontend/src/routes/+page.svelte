@@ -518,7 +518,6 @@
 
   .hero-left {
     display: flex; flex-direction: column; gap: 0;
-    opacity: 0; /* GSAP animates this in */
   }
 
   .hero-eyebrow {
@@ -554,7 +553,7 @@
   }
 
   .hero-ctas {
-    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; opacity: 0;
+    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem;
   }
 
   .hero-cta-primary {
@@ -588,7 +587,7 @@
     color: var(--accent-green); border: 1px solid rgba(0,230,118,0.2);
     border-radius: 100px; padding: 0.3rem 0.85rem;
     text-decoration: none; margin-bottom: 1.5rem;
-    transition: var(--transition-std); opacity: 0;
+    transition: var(--transition-std);
   }
 
   .hero-badge:hover { background: rgba(0,230,118,0.06); text-decoration: none; }
@@ -609,7 +608,7 @@
   .trust-sep  { color: rgba(255,255,255,0.2); }
 
   .hero-right {
-    height: 580px; position: relative; opacity: 0;
+    height: 580px; position: relative;
   }
 
   .hero-brain-placeholder {

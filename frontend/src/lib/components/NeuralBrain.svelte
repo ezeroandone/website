@@ -1,10 +1,9 @@
 <script lang="ts">
   /**
-   * NeuralBrain — Three.js interactive neural network visualisation.
-   * Client-only component — must be rendered inside {#if browser} on the parent.
+   * NeuralBrain — Three.js neural network in a human brain silhouette.
+   * Client-only. Must be rendered inside {#if browser} on the parent.
    */
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '$app/environment';
 
   let canvasEl = $state<HTMLCanvasElement | null>(null);
   let containerEl = $state<HTMLDivElement | null>(null);
@@ -15,7 +14,6 @@
   let cursorY = $state(0);
   let cursorOver = $state(false);
 
-  // ── Cypher dialog content ──────────────────────────────────────────
   const CIPHER_POOL = [
     'INITIALISING NEURAL SUBSTRATE...',
     'LOADING AXONAL PATHWAYS > 2.4 TB',
@@ -38,12 +36,8 @@
     cipherLines = [];
     let i = 0;
     cipherInterval = setInterval(() => {
-      if (i < CIPHER_POOL.length) {
-        cipherLines = [...cipherLines, CIPHER_POOL[i]];
-        i++;
-      } else {
-        if (cipherInterval) clearInterval(cipherInterval);
-      }
+      if (i < CIPHER_POOL.length) { cipherLines = [...cipherLines, CIPHER_POOL[i]]; i++; }
+      else { if (cipherInterval) clearInterval(cipherInterval); }
     }, 200);
   }
 
@@ -53,156 +47,156 @@
     cipherLines = [];
   }
 
-  // ── Three.js scene — all typed as any to avoid SSR module resolution ──
+  // ── Scene state ───────────────────────────────────────────────────
   let animFrame: number;
-  let scene: any;
-  let camera: any;
-  let renderer: any;
-  let nodeGroup: any;
-  let edgeGroup: any;
-  let electronGroup: any;
-  let clock: any;
+  let scene: any, camera: any, renderer: any;
+  let nodeGroup: any, edgeGroup: any, electronGroup: any, clock: any;
 
-  interface NodeData {
-    mesh: any;
-    base: any;
-    pulse: number;
-  }
-
-  interface EdgeData {
-    line: any;
-    from: number;
-    to: number;
-    progress: number;
-    speed: number;
-    active: boolean;
-  }
-
-  interface Electron {
-    mesh: any;
-    edge: EdgeData;
-    progress: number;
-    speed: number;
-  }
+  interface NodeData { mesh: any; base: any; pulse: number; }
+  interface EdgeData { line: any; from: number; to: number; active: boolean; }
+  interface Electron { mesh: any; edgeIdx: number; progress: number; speed: number; }
 
   let nodes: NodeData[] = [];
   let edges: EdgeData[] = [];
   let electrons: Electron[] = [];
 
-  // Generate brain-shaped node distribution
-  function brainPoint(rng: () => number): [number, number, number] {
-    // Approximate brain silhouette: oblate spheroid wider in X, with
-    // a slight downward taper (z = height)
-    let x: number, y: number, z: number;
-    do {
-      x = (rng() - 0.5) * 4.8;
-      y = (rng() - 0.5) * 3.2;
-      z = (rng() - 0.5) * 3.2;
-      // Brain hemisphere shape: two lobes
-      const lobe = Math.pow(Math.abs(x) / 2.4, 2)
-                 + Math.pow(y / 1.6, 2)
-                 + Math.pow(z / 1.6, 2);
-      if (lobe < 0.95 && !(Math.abs(x) < 0.15 && Math.abs(z) > 0.3)) break;
-    } while (true);
-    return [x, z * 0.7, y]; // map to Three.js Y-up
+  // ── Human brain silhouette point cloud ───────────────────────────
+  // Defined as a set of parametric regions matching a real brain:
+  // - Large left/right hemispheres (top)
+  // - Cerebellum (rear lower)
+  // - Brain stem (bottom)
+  function brainPoints(count: number): [number, number, number][] {
+    const pts: [number, number, number][] = [];
+    let _s = 12345;
+    const rng = () => { _s = (_s * 1664525 + 1013904223) >>> 0; return _s / 0xFFFFFFFF; };
+
+    const inBrain = (x: number, y: number, z: number): boolean => {
+      // Main hemispheres: two offset ellipsoids
+      const lx = x - 0.5, rx = x + 0.5;
+      const leftLobe  = (lx*lx)/(1.8*1.8) + (y*y)/(1.6*1.6) + (z*z)/(1.3*1.3);
+      const rightLobe = (rx*rx)/(1.8*1.8) + (y*y)/(1.6*1.6) + (z*z)/(1.3*1.3);
+      if (leftLobe < 1.0 || rightLobe < 1.0) {
+        // Exclude bottom flat part — brain sits above y = -1
+        if (y > -0.9) return true;
+      }
+      // Cerebellum: smaller ellipsoid rear-lower
+      const cy = y + 1.1, cz = z + 1.1;
+      const cerebellum = (x*x)/(1.2*1.2) + (cy*cy)/(0.7*0.7) + (cz*cz)/(0.9*0.9);
+      if (cerebellum < 1.0) return true;
+      // Brain stem: narrow cylinder bottom-center
+      const stemDist = Math.sqrt(x*x + (z+0.6)*(z+0.6));
+      if (stemDist < 0.35 && y > -2.0 && y < -0.7) return true;
+      return false;
+    };
+
+    let attempts = 0;
+    while (pts.length < count && attempts < count * 30) {
+      const x = (rng() - 0.5) * 5.0;
+      const y = (rng() - 0.5) * 4.5 + 0.2;
+      const z = (rng() - 0.5) * 3.5;
+      if (inBrain(x, y, z)) pts.push([x, y, z]);
+      attempts++;
+    }
+    return pts;
   }
 
-  let _seed = 42;
-  function seededRng() { _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 0xFFFFFFFF; }
-
+  // ── Init Three.js ─────────────────────────────────────────────────
   async function initThree() {
     const THREE = await import('three');
 
     scene = new THREE.Scene();
     clock = new THREE.Clock();
 
-    const w = canvasEl!.clientWidth || 600;
-    const h = canvasEl!.clientHeight || 600;
+    const w = canvasEl!.clientWidth  || 560;
+    const h = canvasEl!.clientHeight || 560;
 
-    camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
-    camera.position.set(0, 0, 7);
+    camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 100);
+    camera.position.set(0, 0.2, 8);
 
-    renderer = new THREE.WebGLRenderer({
-      canvas: canvasEl!,
-      antialias: true,
-      alpha: true,
-    });
+    renderer = new THREE.WebGLRenderer({ canvas: canvasEl!, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h, false);
     renderer.setClearColor(0x000000, 0);
 
-    nodeGroup = new THREE.Group();
-    edgeGroup = new THREE.Group();
+    nodeGroup     = new THREE.Group();
+    edgeGroup     = new THREE.Group();
     electronGroup = new THREE.Group();
     scene.add(nodeGroup, edgeGroup, electronGroup);
 
-    // Ambient + directional light
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-    const dir = new THREE.DirectionalLight(0x00c2ff, 1.2);
-    dir.position.set(3, 5, 5);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const dir = new THREE.DirectionalLight(0x00c2ff, 1.4);
+    dir.position.set(4, 6, 5);
     scene.add(dir);
+    const rimLight = new THREE.PointLight(0x0052ff, 0.8, 12);
+    rimLight.position.set(-4, 2, -3);
+    scene.add(rimLight);
 
-    // Create nodes
-    const NODE_COUNT = 120;
-    const nodeMat = new THREE.MeshPhongMaterial({
-      color: 0x00c2ff,
-      emissive: 0x003366,
-      transparent: true,
-      opacity: 0.55,
-      shininess: 80,
-    });
+    // ── Nodes ─────────────────────────────────────────────────────
+    const NODE_COUNT = 140;
+    const positions = brainPoints(NODE_COUNT);
 
-    for (let i = 0; i < NODE_COUNT; i++) {
-      const [x, y, z] = brainPoint(seededRng);
-      const size = 0.018 + seededRng() * 0.024;
-      const geo = new THREE.SphereGeometry(size, 8, 8);
-      const mesh = new THREE.Mesh(geo, nodeMat.clone());
+    positions.forEach(([x, y, z]) => {
+      let _s2 = Math.abs(x * 1000 + y * 7777 + z * 3333) | 0;
+      const r2 = () => { _s2 = (_s2 * 1664525 + 1013904223) >>> 0; return _s2 / 0xFFFFFFFF; };
+
+      const size = 0.016 + r2() * 0.022;
+      const geo  = new THREE.SphereGeometry(size, 7, 7);
+      const mat  = new THREE.MeshPhongMaterial({
+        color: 0x00c2ff, emissive: 0x001844,
+        transparent: true, opacity: 0.5, shininess: 90,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
       mesh.position.set(x, y, z);
       nodeGroup.add(mesh);
-      nodes.push({ mesh, base: new THREE.Vector3(x, y, z), pulse: seededRng() * Math.PI * 2 });
-    }
-
-    // Create edges — connect nearby nodes
-    const edgeMat = new THREE.LineBasicMaterial({
-      color: 0x00c2ff,
-      transparent: true,
-      opacity: 0.12,
+      nodes.push({ mesh, base: new THREE.Vector3(x, y, z), pulse: r2() * Math.PI * 2 });
     });
 
+    // ── Edges ──────────────────────────────────────────────────────
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x0088cc, transparent: true, opacity: 0.10 });
+
     for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dist = nodes[i].mesh.position.distanceTo(nodes[j].mesh.position);
-        if (dist < 1.1 && edges.length < 280) {
-          const pts = [nodes[i].mesh.position.clone(), nodes[j].mesh.position.clone()];
-          const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      let connections = 0;
+      for (let j = i + 1; j < nodes.length && connections < 4; j++) {
+        const d = nodes[i].mesh.position.distanceTo(nodes[j].mesh.position);
+        if (d < 1.0) {
+          const geo  = new THREE.BufferGeometry().setFromPoints([
+            nodes[i].mesh.position.clone(),
+            nodes[j].mesh.position.clone(),
+          ]);
           const line = new THREE.Line(geo, edgeMat.clone());
           edgeGroup.add(line);
-          edges.push({ line, from: i, to: j, progress: 0, speed: 0.4 + seededRng() * 0.8, active: false });
+          edges.push({ line, from: i, to: j, active: false });
+          connections++;
         }
       }
     }
 
-    // Slow rotation
+    // ── Animate ────────────────────────────────────────────────────
     const animate = () => {
       animFrame = requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+      const t   = clock.getElapsedTime();
+      const dt  = clock.getDelta();
 
-      // Gentle auto-rotate
-      nodeGroup.rotation.y = t * 0.08;
-      edgeGroup.rotation.y = t * 0.08;
-      electronGroup.rotation.y = t * 0.08;
+      // Slow gentle auto-rotate around Y
+      nodeGroup.rotation.y     = t * 0.07;
+      edgeGroup.rotation.y     = t * 0.07;
+      electronGroup.rotation.y = t * 0.07;
+      // Subtle tilt oscillation
+      nodeGroup.rotation.x     = Math.sin(t * 0.18) * 0.08;
+      edgeGroup.rotation.x     = Math.sin(t * 0.18) * 0.08;
+      electronGroup.rotation.x = Math.sin(t * 0.18) * 0.08;
 
-      // Node pulsing (subtle in idle, full glow when powered)
-      nodes.forEach((nd, i) => {
-        const pulseMag = powered ? 0.8 : 0.15;
-        const base = powered ? 0.7 : 0.35;
+      // Node pulse
+      nodes.forEach(nd => {
         const mat = nd.mesh.material as any;
-        const p = Math.sin(t * 1.2 + nd.pulse) * pulseMag + base;
-        mat.opacity = Math.max(0.1, Math.min(1, p));
         if (powered) {
-          mat.emissive.setHex(0x0052ff);
+          const p = Math.sin(t * 2.2 + nd.pulse) * 0.35 + 0.65;
+          mat.opacity   = Math.max(0.3, Math.min(1, p));
+          mat.emissive.setHex(0x003399);
           mat.color.setHex(0x00e5ff);
         } else {
+          const p = Math.sin(t * 0.9 + nd.pulse) * 0.12 + 0.38;
+          mat.opacity   = Math.max(0.15, Math.min(0.65, p));
           mat.emissive.setHex(0x001133);
           mat.color.setHex(0x00c2ff);
         }
@@ -211,57 +205,46 @@
       // Edge opacity
       edges.forEach(e => {
         const mat = e.line.material as any;
-        mat.opacity = powered ? 0.35 : 0.10;
+        mat.opacity = powered ? 0.30 : 0.08;
       });
 
-      // Electron movement
-      if (powered) {
-        electrons.forEach((el, idx) => {
-          el.progress += el.speed * clock.getDelta() * 0.4;
-          if (el.progress > 1) {
-            el.progress = 0;
-            // pick new edge
-            el.edge = edges[Math.floor(Math.random() * edges.length)];
-          }
-          const fromPos = nodes[el.edge.from].base;
-          const toPos   = nodes[el.edge.to].base;
-          el.mesh.position.lerpVectors(fromPos, toPos, el.progress);
-          // apply group rotation
-          el.mesh.position.applyEuler(nodeGroup.rotation);
-          // actually use world position via group
-          el.mesh.position.copy(fromPos).lerp(toPos, el.progress);
-        });
-      } else {
-        electrons.forEach(el => { el.mesh.visible = false; });
-      }
+      // Electrons
+      electrons.forEach(el => {
+        el.progress += el.speed * 0.012;
+        if (el.progress > 1) {
+          el.progress = 0;
+          el.edgeIdx  = Math.floor(Math.random() * edges.length);
+        }
+        const edge    = edges[el.edgeIdx];
+        const fromPos = nodes[edge.from].base;
+        const toPos   = nodes[edge.to].base;
+        el.mesh.position.lerpVectors(fromPos, toPos, el.progress);
+        el.mesh.visible = powered;
+      });
 
       renderer.render(scene, camera);
     };
-
     animate();
   }
 
-  function spawnElectrons(THREE: any) {
-    // Clear existing
+  async function spawnElectrons() {
+    const THREE = await import('three');
     electronGroup.clear();
     electrons = [];
-
-    const electronMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-    for (let i = 0; i < 40; i++) {
-      const geo = new THREE.SphereGeometry(0.025, 6, 6);
-      const mesh = new THREE.Mesh(geo, electronMat.clone());
+    if (!edges.length) return;
+    for (let i = 0; i < 50; i++) {
+      const geo  = new THREE.SphereGeometry(0.022, 6, 6);
+      const mat  = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+      const mesh = new THREE.Mesh(geo, mat);
       electronGroup.add(mesh);
-      const edge = edges[Math.floor(Math.random() * edges.length)];
-      electrons.push({ mesh, edge, progress: Math.random(), speed: 0.5 + Math.random() });
+      electrons.push({ mesh, edgeIdx: Math.floor(Math.random() * edges.length), progress: Math.random(), speed: 0.6 + Math.random() * 1.0 });
     }
   }
 
   async function powerOn() {
     powered = true;
     startCipher();
-    const THREE = await import('three');
-    spawnElectrons(THREE);
-    electrons.forEach(el => { el.mesh.visible = true; });
+    await spawnElectrons();
   }
 
   function powerOff() {
@@ -272,33 +255,41 @@
 
   function handleResize() {
     if (!canvasEl || !renderer || !camera) return;
-    const w = canvasEl.clientWidth;
-    const h = canvasEl.clientHeight;
+    const w = canvasEl.clientWidth, h = canvasEl.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
 
-  onMount(() => {
-    initThree();
-    window.addEventListener('resize', handleResize);
-  });
-
-  onDestroy(() => {
-    cancelAnimationFrame(animFrame);
-    renderer?.dispose();
-    window.removeEventListener('resize', handleResize);
-    stopCipher();
-  });
+  onMount(() => { initThree(); window.addEventListener('resize', handleResize); });
+  onDestroy(() => { cancelAnimationFrame(animFrame); renderer?.dispose(); window.removeEventListener('resize', handleResize); stopCipher(); });
 </script>
 
-<!-- Custom cursor overlay (only when hovering the brain canvas) -->
+<!-- Robotic pointing hand cursor SVG — positioned absolutely inside the container -->
 {#if cursorOver}
-  <div
-    class="robot-cursor"
-    style="left:{cursorX}px;top:{cursorY}px"
-    aria-hidden="true"
-  >🤖</div>
+  <div class="robot-cursor" style="left:{cursorX}px;top:{cursorY}px" aria-hidden="true">
+    <svg width="40" height="48" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Palm -->
+      <rect x="10" y="22" width="20" height="18" rx="4" fill="#0a0a1a" stroke="#00c2ff" stroke-width="1.5"/>
+      <!-- Index finger pointing -->
+      <rect x="17" y="6" width="7" height="18" rx="3.5" fill="#0a0a1a" stroke="#00c2ff" stroke-width="1.5"/>
+      <!-- Middle finger (shorter, tucked) -->
+      <rect x="25" y="14" width="6" height="12" rx="3" fill="#0a0a1a" stroke="#00c2ff" stroke-width="1.2"/>
+      <!-- Ring finger -->
+      <rect x="10" y="16" width="6" height="10" rx="3" fill="#0a0a1a" stroke="#00c2ff" stroke-width="1.2"/>
+      <!-- Thumb -->
+      <rect x="4" y="26" width="8" height="6" rx="3" fill="#0a0a1a" stroke="#00c2ff" stroke-width="1.2"/>
+      <!-- Knuckle lines on index -->
+      <line x1="17" y1="12" x2="24" y2="12" stroke="#00c2ff" stroke-width="0.8" opacity="0.6"/>
+      <line x1="17" y1="17" x2="24" y2="17" stroke="#00c2ff" stroke-width="0.8" opacity="0.6"/>
+      <!-- Fingertip glow -->
+      <circle cx="20.5" cy="7" r="3" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.8"/>
+      <circle cx="20.5" cy="7" r="1.5" fill="#00e5ff" opacity="0.9"/>
+      <!-- Mechanical joints highlight -->
+      <rect x="10" y="28" width="20" height="1" rx="0.5" fill="#00c2ff" opacity="0.3"/>
+      <rect x="10" y="34" width="20" height="1" rx="0.5" fill="#00c2ff" opacity="0.3"/>
+    </svg>
+  </div>
 {/if}
 
 <div
@@ -312,30 +303,17 @@
   onmouseleave={() => (cursorOver = false)}
   role="presentation"
 >
-  <!-- Three.js canvas -->
   <canvas bind:this={canvasEl} class="brain-canvas" aria-hidden="true"></canvas>
 
-  <!-- 0 / 1 toggle buttons -->
-  <div class="binary-buttons" aria-label="Power controls">
-    <button
-      class="bin-btn bin-btn--off"
-      class:active={!powered}
-      onclick={powerOff}
-      aria-pressed={!powered}
-      title="Power off"
-    >0</button>
-    <button
-      class="bin-btn bin-btn--on"
-      class:active={powered}
-      onclick={powerOn}
-      aria-pressed={powered}
-      title="Power on — activate neural network"
-    >1</button>
+  <!-- 0 / 1 power buttons -->
+  <div class="binary-buttons" aria-label="Neural network power controls">
+    <button class="bin-btn bin-btn--off" class:active={!powered} onclick={powerOff} aria-pressed={!powered} title="Power off">0</button>
+    <button class="bin-btn bin-btn--on"  class:active={powered}  onclick={powerOn}  aria-pressed={powered}  title="Activate neural network">1</button>
   </div>
 
-  <!-- Cypher dialog -->
+  <!-- Cypher terminal -->
   {#if showCipher}
-    <div class="cypher-dialog" role="log" aria-live="polite" aria-label="System output">
+    <div class="cypher-dialog" role="log" aria-live="polite">
       <div class="cypher-header">
         <span class="cypher-dot cypher-dot--red"></span>
         <span class="cypher-dot cypher-dot--yellow"></span>
@@ -345,9 +323,7 @@
       <div class="cypher-body">
         {#each cipherLines as line}
           <p class="cypher-line">
-            <span class="cypher-prompt">▸</span>
-            {line}
-            <span class="cypher-cursor">█</span>
+            <span class="cypher-prompt">▸</span>{line}<span class="cypher-cursor">█</span>
           </p>
         {/each}
       </div>
@@ -357,190 +333,108 @@
 
 <style>
   .brain-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 520px;
-    cursor: none;
+    position: relative; width: 100%; height: 100%;
+    min-height: 480px; cursor: none;
   }
 
-  .brain-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
+  .brain-canvas { width: 100%; height: 100%; display: block; }
 
-  /* ── Floating robot cursor ──────────────────────────── */
+  /* ── Robot cursor ──────────────────────────────────── */
   .robot-cursor {
-    position: absolute;
-    pointer-events: none;
-    font-size: 2rem;
-    transform: translate(-4px, -4px);
-    z-index: 20;
-    filter: drop-shadow(0 0 8px rgba(0,194,255,0.8));
-    transition: left 0.05s linear, top 0.05s linear;
+    position: absolute; pointer-events: none; z-index: 20;
+    transform: translate(-8px, -4px);
+    filter: drop-shadow(0 0 6px rgba(0,194,255,0.7));
+    transition: left 0.04s linear, top 0.04s linear;
   }
 
   /* ── 0/1 buttons ────────────────────────────────────── */
   .binary-buttons {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
+    position: absolute; bottom: 2rem; left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 1rem;
-    z-index: 10;
+    display: flex; gap: 1rem; z-index: 10;
   }
 
   .bin-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.2);
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    color: rgba(255,255,255,0.5);
-    font-family: 'Inter Tight', monospace;
-    font-size: 1.5rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+    width: 58px; height: 58px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+    color: rgba(255,255,255,0.45);
+    font-family: 'Inter Tight', monospace; font-size: 1.6rem; font-weight: 900;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden;
   }
 
-  .bin-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    opacity: 0;
+  .bin-btn::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%; opacity: 0;
     transition: opacity 0.3s;
   }
-
-  .bin-btn--on::before  { background: radial-gradient(circle, rgba(0,194,255,0.3) 0%, transparent 70%); }
-  .bin-btn--off::before { background: radial-gradient(circle, rgba(255,51,102,0.3) 0%, transparent 70%); }
+  .bin-btn--on::after  { background: radial-gradient(circle, rgba(0,194,255,0.25) 0%, transparent 70%); }
+  .bin-btn--off::after { background: radial-gradient(circle, rgba(255,51,102,0.25) 0%, transparent 70%); }
 
   .bin-btn--on.active {
-    border-color: #00c2ff;
-    color: #00e5ff;
-    box-shadow: 0 0 24px rgba(0,194,255,0.6), 0 0 48px rgba(0,194,255,0.2);
-    background: rgba(0,50,100,0.7);
+    border-color: #00c2ff; color: #00e5ff;
+    box-shadow: 0 0 28px rgba(0,194,255,0.7), 0 0 56px rgba(0,194,255,0.25);
+    background: rgba(0,30,70,0.75);
     animation: pulse-on 2s ease-in-out infinite;
   }
-
   .bin-btn--off.active {
-    border-color: #ff3366;
-    color: #ff6688;
-    box-shadow: 0 0 16px rgba(255,51,102,0.4);
-    background: rgba(60,0,20,0.7);
+    border-color: #ff3366; color: #ff6688;
+    box-shadow: 0 0 18px rgba(255,51,102,0.5);
+    background: rgba(50,0,15,0.75);
   }
-
-  .bin-btn--on.active::before,
-  .bin-btn--off.active::before { opacity: 1; }
+  .bin-btn--on.active::after, .bin-btn--off.active::after { opacity: 1; }
 
   @keyframes pulse-on {
-    0%,100% { box-shadow: 0 0 24px rgba(0,194,255,0.6), 0 0 48px rgba(0,194,255,0.2); }
-    50%      { box-shadow: 0 0 36px rgba(0,194,255,0.9), 0 0 64px rgba(0,194,255,0.35); }
+    0%,100% { box-shadow: 0 0 28px rgba(0,194,255,0.7),  0 0 56px rgba(0,194,255,0.25); }
+    50%      { box-shadow: 0 0 42px rgba(0,194,255,0.95), 0 0 80px rgba(0,194,255,0.4); }
   }
 
   /* ── Cypher dialog ──────────────────────────────────── */
   .cypher-dialog {
-    position: absolute;
-    top: 1.5rem;
-    right: 1rem;
-    width: min(300px, 90%);
-    background: rgba(0,0,0,0.88);
-    border: 1px solid rgba(0,194,255,0.35);
-    border-radius: 10px;
-    overflow: hidden;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 8px 40px rgba(0,194,255,0.15);
-    z-index: 15;
+    position: absolute; top: 1.25rem; right: 0.75rem;
+    width: min(290px, 90%);
+    background: rgba(0,0,0,0.9); border: 1px solid rgba(0,194,255,0.3);
+    border-radius: 10px; overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 40px rgba(0,194,255,0.12); z-index: 15;
     animation: slide-in 0.3s cubic-bezier(0.16,1,0.3,1);
   }
 
   @keyframes slide-in {
-    from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+    from { opacity: 0; transform: translateY(-10px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   .cypher-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.04);
-    border-bottom: 1px solid rgba(0,194,255,0.15);
+    display: flex; align-items: center; gap: 5px; padding: 7px 12px;
+    background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(0,194,255,0.12);
   }
-
-  .cypher-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
+  .cypher-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .cypher-dot--red    { background: #ff5f57; }
   .cypher-dot--yellow { background: #ffbd2e; }
   .cypher-dot--green  { background: #28c940; }
-
   .cypher-title {
-    font-family: 'Inter Tight', monospace;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: rgba(255,255,255,0.4);
-    margin-left: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-family: 'Inter Tight', monospace; font-size: 0.58rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.35); margin-left: 4px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
   }
-
   .cypher-body {
-    padding: 10px 12px;
-    max-height: 220px;
-    overflow-y: auto;
-    scrollbar-width: none;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    padding: 10px 12px; max-height: 220px; overflow-y: auto;
+    scrollbar-width: none; display: flex; flex-direction: column; gap: 3px;
   }
-
   .cypher-body::-webkit-scrollbar { display: none; }
-
   .cypher-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'SFMono-Regular', 'Consolas', 'Monaco', monospace;
-    font-size: 0.65rem;
-    color: #00e5ff;
-    margin: 0;
-    animation: type-in 0.15s ease;
-    white-space: nowrap;
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'SFMono-Regular', 'Consolas', monospace;
+    font-size: 0.62rem; color: #00e5ff; margin: 0;
+    animation: type-in 0.15s ease; white-space: nowrap;
   }
-
   @keyframes type-in {
-    from { opacity: 0; transform: translateX(-4px); }
+    from { opacity: 0; transform: translateX(-3px); }
     to   { opacity: 1; transform: translateX(0); }
   }
-
-  .cypher-prompt {
-    color: rgba(0,194,255,0.5);
-    font-size: 0.6rem;
-    flex-shrink: 0;
-  }
-
-  .cypher-cursor {
-    animation: blink 0.8s step-end infinite;
-    color: #00e5ff;
-    font-size: 0.55rem;
-  }
-
+  .cypher-prompt { color: rgba(0,194,255,0.5); font-size: 0.58rem; flex-shrink: 0; }
+  .cypher-cursor { animation: blink 0.8s step-end infinite; color: #00e5ff; font-size: 0.55rem; }
   @keyframes blink { 50% { opacity: 0; } }
 </style>
