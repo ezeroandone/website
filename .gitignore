@@ -29,3 +29,6 @@ Thumbs.db
 
 # ── Kiro IDE workspace files ─────────────────────────────────
 .kiro/
+
+# ── Scripts runtime state ────────────────────────────────────
+scripts/.populate-state.json
