@@ -7,6 +7,7 @@ use crate::handlers::auth as auth_handlers;
 use crate::handlers::careers as careers_handlers;
 use crate::handlers::content as content_handlers;
 use crate::handlers::onboarding as onboarding_handlers;
+use crate::handlers::storage as storage_handlers;
 use crate::handlers::team as team_handlers;
 use crate::handlers::verify as verify_handlers;
 use crate::middleware::auth::{auth_middleware, onboarding_guard, SessionContext};
@@ -146,6 +147,15 @@ pub async fn router_dispatch(
     }
 
     // ── Public routes (no auth required) ────────────────────────────────────
+
+    // GET /media/* — proxy public R2 objects (images, logos, etc.)
+    if method == Method::Get && path.starts_with("/media/") {
+        let key = path.trim_start_matches("/media/").to_string();
+        if key.is_empty() || key.contains("..") {
+            return error_to_response(WorkerError::NotFound);
+        }
+        return storage_handlers::serve_r2_object(req, env, &key).await;
+    }
 
     // GET /api/insights
     if method == Method::Get && path == "/api/insights" {

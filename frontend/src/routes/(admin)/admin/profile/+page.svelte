@@ -20,6 +20,7 @@
 
   let busy = $state(false);
   let status = $state<{ text: string; ok: boolean } | null>(null);
+  let uploadingAvatar = $state(false);
 
   function showStatus(text: string, ok: boolean) {
     status = { text, ok };
@@ -62,6 +63,31 @@
       ? `https://ezeroandone.io/team/${data.profile.username}`
       : null
   );
+
+  async function handleAvatarUpload(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    uploadingAvatar = true;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      });
+      if (!res.ok) { showStatus('Upload failed: ' + await res.text(), false); return; }
+      const { url } = await res.json();
+      avatarUrl = url.replace('https://media.ezeroandone.com/', '/media/');
+      showStatus('Photo uploaded.', true);
+    } catch {
+      showStatus('Upload failed — network error.', false);
+    } finally {
+      uploadingAvatar = false;
+      input.value = '';
+    }
+  }
 
   // QR code — rendered client-side into the #qr-container div
   onMount(async () => {
@@ -132,6 +158,20 @@
               {/if}
             </div>
             <div class="avatar-fields">
+              <label class="field">
+                <span class="field-label">Upload photo</span>
+                <input
+                  type="file"
+                  class="input input--file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onchange={handleAvatarUpload}
+                />
+              </label>
+              <p class="field-hint">JPG, PNG or WebP · max 5 MB</p>
+              {#if uploadingAvatar}
+                <p class="field-hint" style="color:#00C2FF">Uploading…</p>
+              {/if}
+              <div class="field-divider">or paste a URL</div>
               <label class="field">
                 <span class="field-label">Avatar URL</span>
                 <input
@@ -346,6 +386,31 @@
     color: rgba(255, 255, 255, 0.3);
     margin: 0;
   }
+
+  .input--file {
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  .field-divider {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+    position: relative;
+    margin: 4px 0;
+  }
+
+  .field-divider::before, .field-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 35%;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .field-divider::before { left: 0; }
+  .field-divider::after  { right: 0; }
 
   /* Form */
   .form-row {

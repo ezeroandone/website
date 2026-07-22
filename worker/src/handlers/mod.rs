@@ -7,5 +7,6 @@ pub mod auth;
 pub mod careers;
 pub mod content;
 pub mod onboarding;
+pub mod storage;
 pub mod team;
 pub mod verify;

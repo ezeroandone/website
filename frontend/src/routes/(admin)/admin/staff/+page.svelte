@@ -151,6 +151,24 @@
 
   // ── Display helpers ──────────────────────────────────────────────────
 
+  async function downloadQR(member: StaffAdmin) {
+    const profileUrl = `https://ezeroandone.io/team/${member.username}`;
+    try {
+      const QRCode = await import('qrcode');
+      const dataUrl = await QRCode.toDataURL(profileUrl, {
+        width: 400,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' },
+      });
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `qr-${member.username || member.id}.png`;
+      link.click();
+    } catch (err) {
+      console.error('[QR download]', err);
+    }
+  }
+
   function roleBadgeClass(role: StaffAdmin['role']): string {
     return {
       SuperAdmin: 'badge badge--red',
@@ -306,6 +324,20 @@
                         {isLoading(member.id) ? '…' : 'Apply'}
                       </button>
                     </div>
+
+                    {#if member.username}
+                      <button
+                        class="btn btn--qr"
+                        type="button"
+                        onclick={() => downloadQR(member)}
+                        aria-label="Download QR code for {member.name || member.email}"
+                        title="Download identity QR code"
+                      >
+                        <span class="material-icons-outlined" style="font-size:1rem">qr_code_2</span>
+                        QR
+                      </button>
+                    {/if}
+                  </div>
                   </div>
 
                   <!-- Inline action feedback message -->
@@ -601,6 +633,18 @@
   .btn--update:not(:disabled):hover {
     background: rgba(0, 122, 255, 0.28);
     box-shadow: 0 0 10px rgba(0, 122, 255, 0.3);
+  }
+
+  .btn--qr {
+    background: rgba(0, 194, 255, 0.1);
+    color: #00C2FF;
+    border-color: rgba(0, 194, 255, 0.25);
+    gap: 4px;
+  }
+
+  .btn--qr:hover {
+    background: rgba(0, 194, 255, 0.2);
+    box-shadow: 0 0 10px rgba(0, 194, 255, 0.3);
   }
 
   /* ── Feedback messages ─────────────────────────────────── */

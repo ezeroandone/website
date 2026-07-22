@@ -23,7 +23,7 @@
 <FloatingHeader>
   <nav class="nav-inner">
     <a href="/" class="brand" aria-label="eZeroAndOne.io home">
-      e<span class="brand-accent">0</span>&amp;<span class="brand-accent">1</span><span class="brand-tld">.io</span>
+      eZeroAndOne.io
     </a>
     <ul class="nav-links" role="list">
       {#each navLinks as link}
@@ -53,10 +53,9 @@
     max-width: 1200px; margin: 0 auto; width: 100%;
   }
   .brand {
-    font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800;
-    color: #fff; text-decoration: none; letter-spacing: -0.04em; flex-shrink: 0;
+    font-family: var(--font-heading, 'Inter Tight', sans-serif); font-size: 1.25rem; font-weight: 800;
+    color: #ffffff; text-decoration: none; letter-spacing: -0.04em; flex-shrink: 0;
   }
-  .brand-accent { color: var(--accent-blue-hi, #00d4ff); }
   .nav-links {
     display: flex; list-style: none; margin: 0; padding: 0; gap: 1.75rem; flex: 1;
   }
@@ -67,7 +66,7 @@
   }
   .nav-links a:hover,
   .nav-links a[aria-current="page"] { color: #fff; text-decoration: none; }
-  .brand-tld { color: rgba(255,255,255,0.35); font-size: 0.85em; }
+
   .nav-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
   .nav-signin { padding: 0.45rem 1rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.35rem; }
   .nav-cta    { padding: 0.45rem 1.25rem; font-size: 0.75rem; }

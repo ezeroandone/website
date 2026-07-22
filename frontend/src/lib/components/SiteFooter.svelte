@@ -8,7 +8,7 @@
     <!-- Col 1: Identity -->
     <div class="footer-col footer-col--brand">
       <a href="/" class="footer-logo" aria-label="eZeroAndOne.io">
-        e<span>0</span>&amp;<span>1</span><span class="footer-logo-tld">.io</span>
+        eZeroAndOne.io
       </a>
       <p class="footer-bio">Engineered from the baseline.<br />Built for legacy.</p>
       <div class="footer-social">
@@ -91,12 +91,10 @@
     gap: 3rem; padding-bottom: 4rem;
   }
   .footer-logo {
-    font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800;
-    letter-spacing: -0.04em; color: #fff; text-decoration: none; display: inline-block;
+    font-family: var(--font-heading, 'Inter Tight', sans-serif); font-size: 1.5rem; font-weight: 800;
+    letter-spacing: -0.04em; color: #ffffff; text-decoration: none; display: inline-block;
     margin-bottom: 1rem;
   }
-  .footer-logo span { color: var(--accent-blue-hi, #00d4ff); }
-  .footer-logo-tld { color: rgba(255,255,255,0.3); font-size: 0.75em; }
   .footer-bio {
     font-family: var(--font-body); font-size: 0.875rem; line-height: 1.7;
     color: var(--text-secondary, rgba(255,255,255,0.5)); margin: 0 0 1.5rem;

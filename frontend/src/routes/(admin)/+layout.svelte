@@ -24,7 +24,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <a href="/admin/dashboard" class="brand-link" aria-label="Admin dashboard">
-        <span class="brand-mark">e<span class="brand-accent">0</span>&amp;<span class="brand-accent">1</span></span>
+        <span class="brand-wordmark">eZeroAndOne.io</span>
         <span class="brand-sub">Admin</span>
       </a>
     </div>
@@ -113,15 +113,13 @@
     text-decoration: none;
   }
 
-  .brand-mark {
+  .brand-wordmark {
     font-family: var(--font-heading, 'Inter Tight', sans-serif);
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 800;
-    letter-spacing: -0.04em;
-    color: #fff;
+    letter-spacing: -0.03em;
+    color: #ffffff;
   }
-
-  .brand-accent { color: var(--accent-blue-hi, #00C2FF); }
 
   .brand-sub {
     font-size: 0.65rem;

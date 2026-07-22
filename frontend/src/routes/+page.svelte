@@ -228,11 +228,11 @@
           {#if client.website_url}
             <a href={client.website_url} target="_blank" rel="noopener noreferrer"
                class="client-logo-link" title={client.name} aria-label={client.name}>
-              <img src={client.logo_url} alt={client.name} class="client-logo" loading="lazy" height="36" />
+              <img src={client.logo_url.replace('https://media.ezeroandone.com/', '/media/')} alt={client.name} class="client-logo" loading="lazy" height="36" />
             </a>
           {:else}
             <div class="client-logo-link" title={client.name}>
-              <img src={client.logo_url} alt={client.name} class="client-logo" loading="lazy" height="36" />
+              <img src={client.logo_url.replace('https://media.ezeroandone.com/', '/media/')} alt={client.name} class="client-logo" loading="lazy" height="36" />
             </div>
           {/if}
         {/each}
@@ -646,7 +646,7 @@
 
   .client-logo {
     height: 30px; width: auto; max-width: 110px; object-fit: contain;
-    filter: brightness(0) invert(1);
+    filter: none;
   }
 
   /* ── PHILOSOPHY ────────────────────────────────────── */
