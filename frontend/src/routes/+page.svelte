@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import GlassCard from '$lib/components/GlassCard.svelte';
   import NeuralBrain from '$lib/components/NeuralBrain.svelte';
   import type { PageData } from './$types';
@@ -224,9 +225,14 @@
       </div>
     </div>
 
-    <!-- Right: interactive neural brain -->
+    <!-- Right: interactive neural brain — client-only (requires WebGL/DOM) -->
     <div class="hero-right" aria-hidden="true">
-      <NeuralBrain />
+      {#if browser}
+        <NeuralBrain />
+      {:else}
+        <!-- SSR placeholder — replaced by NeuralBrain on hydration -->
+        <div class="hero-brain-placeholder" aria-hidden="true"></div>
+      {/if}
     </div>
 
   </div>
@@ -604,6 +610,12 @@
 
   .hero-right {
     height: 580px; position: relative; opacity: 0;
+  }
+
+  .hero-brain-placeholder {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse 60% 60% at 50% 45%, rgba(0,82,255,0.06) 0%, transparent 70%);
+    border-radius: 50%;
   }
 
   /* ── CLIENT LOGOS ──────────────────────────────────── */

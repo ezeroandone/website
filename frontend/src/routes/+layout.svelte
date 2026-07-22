@@ -15,6 +15,10 @@
 
 <svelte:head>
   <title>eZeroAndOne</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <meta name="theme-color" content="#000000" />
 </svelte:head>
 
 <div class="app-shell" data-theme="dark">

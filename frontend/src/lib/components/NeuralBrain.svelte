@@ -1,13 +1,10 @@
 <script lang="ts">
   /**
    * NeuralBrain — Three.js interactive neural network visualisation.
-   *
-   * Left-column hero visual: a transparent brain-shaped node network.
-   * Clicking "1" activates it (electrons fire along edges, nodes glow, Cypher dialog appears).
-   * Clicking "0" powers it off.
-   * Custom robotic cursor tracks over the canvas area.
+   * Client-only component — must be rendered inside {#if browser} on the parent.
    */
   import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
 
   let canvasEl = $state<HTMLCanvasElement | null>(null);
   let containerEl = $state<HTMLDivElement | null>(null);
@@ -56,24 +53,24 @@
     cipherLines = [];
   }
 
-  // ── Three.js scene ─────────────────────────────────────────────────
+  // ── Three.js scene — all typed as any to avoid SSR module resolution ──
   let animFrame: number;
-  let scene: import('three').Scene;
-  let camera: import('three').PerspectiveCamera;
-  let renderer: import('three').WebGLRenderer;
-  let nodeGroup: import('three').Group;
-  let edgeGroup: import('three').Group;
-  let electronGroup: import('three').Group;
-  let clock: import('three').Clock;
+  let scene: any;
+  let camera: any;
+  let renderer: any;
+  let nodeGroup: any;
+  let edgeGroup: any;
+  let electronGroup: any;
+  let clock: any;
 
   interface NodeData {
-    mesh: import('three').Mesh;
-    base: import('three').Vector3;
+    mesh: any;
+    base: any;
     pulse: number;
   }
 
   interface EdgeData {
-    line: import('three').Line;
+    line: any;
     from: number;
     to: number;
     progress: number;
@@ -82,7 +79,7 @@
   }
 
   interface Electron {
-    mesh: import('three').Mesh;
+    mesh: any;
     edge: EdgeData;
     progress: number;
     speed: number;
@@ -199,7 +196,7 @@
       nodes.forEach((nd, i) => {
         const pulseMag = powered ? 0.8 : 0.15;
         const base = powered ? 0.7 : 0.35;
-        const mat = nd.mesh.material as THREE.MeshPhongMaterial;
+        const mat = nd.mesh.material as any;
         const p = Math.sin(t * 1.2 + nd.pulse) * pulseMag + base;
         mat.opacity = Math.max(0.1, Math.min(1, p));
         if (powered) {
@@ -213,7 +210,7 @@
 
       // Edge opacity
       edges.forEach(e => {
-        const mat = e.line.material as THREE.LineBasicMaterial;
+        const mat = e.line.material as any;
         mat.opacity = powered ? 0.35 : 0.10;
       });
 
@@ -244,7 +241,7 @@
     animate();
   }
 
-  function spawnElectrons(THREE: typeof import('three')) {
+  function spawnElectrons(THREE: any) {
     // Clear existing
     electronGroup.clear();
     electrons = [];
