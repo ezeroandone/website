@@ -64,7 +64,11 @@ const CLIENTS = {
 };
 
 function authHeaders(extra = {}) {
-  return { Cookie: `session=${SESSION}`, ...extra };
+  return {
+    Cookie: `session=${SESSION}`,
+    Origin: BASE_URL,  // Required to pass SvelteKit CSRF check
+    ...extra
+  };
 }
 
 async function createClient(name, website, sort_order) {
