@@ -293,8 +293,8 @@
 <!-- ── Create overlay ──────────────────────────────────────────────────────── -->
 {#if overlay === 'create'}
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="modal-backdrop" onclick={() => { overlay = null; }}>
-  <div class="modal glass-card" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
+<div class="modal-backdrop" role="presentation" onclick={() => { overlay = null; }}>
+  <div class="modal glass-card" role="dialog" aria-modal="true" tabindex="-1" onclick={(e) => e.stopPropagation()}>
     <div class="modal-header">
       <h2 class="modal-title">New post</h2>
       <button class="modal-close" type="button" onclick={() => (overlay = null)} aria-label="Close">✕</button>
@@ -436,8 +436,8 @@
 <!-- ── Edit overlay ────────────────────────────────────────────────────────── -->
 {#if overlay !== null && overlay !== 'create' && editPost !== null}
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="modal-backdrop" onclick={() => (overlay = null)}>
-  <div class="modal glass-card" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
+<div class="modal-backdrop" role="presentation" onclick={() => (overlay = null)}>
+  <div class="modal glass-card" role="dialog" aria-modal="true" tabindex="-1" onclick={(e) => e.stopPropagation()}>
     <div class="modal-header">
       <h2 class="modal-title">Edit — {editPost.title}</h2>
       <button class="modal-close" type="button" onclick={() => (overlay = null)} aria-label="Close">✕</button>
@@ -614,12 +614,6 @@
   .img-input-row .input { flex: 1; min-width: 160px; }
   .img-or { font-size: 0.75rem; color: var(--color-text-muted, rgba(255,255,255,0.3)); flex-shrink: 0; }
   .img-preview { width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-top: 6px; }
-
-  /* Icon grid */
-  .icon-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
-  .icon-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.15s; color: var(--color-text-secondary,#888899); }
-  .icon-btn:hover { background: rgba(255,255,255,0.12); color: var(--color-text-primary,#f0f0f0); }
-  .icon-btn.selected { background: color-mix(in srgb, var(--accent-blue,#00d4ff) 20%, transparent); border-color: var(--accent-blue,#00d4ff); color: var(--accent-blue,#00d4ff); }
 
   /* Team section */
   .team-section { display: flex; flex-direction: column; gap: 14px; }

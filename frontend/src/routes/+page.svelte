@@ -11,14 +11,14 @@
     {
       icon: 'layers',
       title: 'Digital Architecture',
-      body: 'Custom web apps, APIs, and enterprise platforms engineered on Cloudflare's edge — sub-100ms globally.',
+      body: "Custom web apps, APIs, and enterprise platforms engineered on Cloudflare's edge — sub-100ms globally.",
       href: '/capabilities#software-engineering',
       accent: '#00c2ff',
     },
     {
       icon: 'security',
       title: 'Cybersecurity & Compliance',
-      body: 'Penetration testing, NDPR/ISO 27001 audits, and managed SOC operations — protecting what you've built.',
+      body: "Penetration testing, NDPR/ISO 27001 audits, and managed SOC operations — protecting what you've built.",
       href: '/capabilities#cybersecurity',
       accent: '#ff3366',
     },

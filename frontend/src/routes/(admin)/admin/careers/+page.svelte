@@ -13,7 +13,9 @@
   type CareerType = Career['type'];
   type ApplicationStatus = Application['status'];
 
+  // svelte-ignore state_referenced_locally — intentional: seeded once from server data
   let careers = $state<Career[]>(data.careers);
+  // svelte-ignore state_referenced_locally — intentional: seeded once from server data
   let applications = $state<Application[]>(data.applications);
 
   const TRANSITIONS: Record<ApplicationStatus, ApplicationStatus[]> = {
@@ -528,7 +530,7 @@
 
 {#if hireAppId !== null}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="modal-backdrop" onclick={() => (hireAppId = null)}>
+  <div class="modal-backdrop" role="presentation" onclick={() => (hireAppId = null)}>
     <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="hire-dialog-title" tabindex="-1" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
