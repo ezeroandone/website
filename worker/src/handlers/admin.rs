@@ -153,7 +153,7 @@ pub async fn create_career(
         description_md.into(),
         department.into(),
         career_type.into(),
-        active_int.into(),
+        wasm_bindgen::JsValue::from_f64(active_int as f64),
     ])
     .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
     .run()
@@ -242,7 +242,7 @@ pub async fn patch_career(
     if let Some(active_bool) = body.get("active").and_then(|v| v.as_bool()) {
         let active_int: i64 = if active_bool { 1 } else { 0 };
         set_clauses.push(format!("active = ?{}", param_idx));
-        bindings.push(active_int.into());
+        bindings.push(wasm_bindgen::JsValue::from_f64(active_int as f64));
         param_idx += 1;
     }
 
@@ -618,7 +618,7 @@ pub async fn hire_applicant(
             "INSERT INTO staff_lifecycle (staff_id, status, probation_start, probation_end) \
              VALUES (?1, 'Probation', unixepoch(), unixepoch() + ?2)",
         )
-        .bind(&[staff_id.as_str().into(), probation_seconds.into()])
+        .bind(&[staff_id.as_str().into(), wasm_bindgen::JsValue::from_f64(probation_seconds as f64)])
         .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
         .run()
         .await;
@@ -767,10 +767,8 @@ pub async fn patch_staff_role(
     };
 
     // ── Validate role value (Req 8.5, 8.6) ──────────────────────────────────
-    let role_int: i64 = match role_str.as_str() {
-        "Staff" => 2,
-        "Admin" => 3,
-        "SuperAdmin" => 4,
+    match role_str.as_str() {
+        "Staff" | "Admin" | "SuperAdmin" => {}
         _ => {
             return error_to_response(WorkerError::Validation(ValidationError::InvalidInput(
                 "role must be one of: Staff, Admin, SuperAdmin".into(),
@@ -790,7 +788,7 @@ pub async fn patch_staff_role(
     // ── Execute the role update ──────────────────────────────────────────────
     let result = db
         .prepare("UPDATE staff SET role = ?1, updated_at = unixepoch() WHERE id = ?2")
-        .bind(&[role_int.into(), staff_id.into()])
+        .bind(&[role_str.as_str().into(), staff_id.into()])
         .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
         .run()
         .await
@@ -1113,16 +1111,15 @@ pub async fn patch_content(mut req: Request, env: &Env, _ctx: SessionContext, id
 
     // published is bool → stored as integer
     if let Some(published) = body.get("published").and_then(|v| v.as_bool()) {
-        let val: i64 = if published { 1 } else { 0 };
         set_clauses.push(format!("published = ?{}", param_idx));
-        bindings.push(val.into());
+        bindings.push(wasm_bindgen::JsValue::from_f64(if published { 1.0 } else { 0.0 }));
         param_idx += 1;
     }
 
     // published_at is an optional integer
     if let Some(published_at) = body.get("published_at").and_then(|v| v.as_i64()) {
         set_clauses.push(format!("published_at = ?{}", param_idx));
-        bindings.push(published_at.into());
+        bindings.push(wasm_bindgen::JsValue::from_f64(published_at as f64));
         param_idx += 1;
     }
 
@@ -1722,7 +1719,9 @@ pub async fn create_client(mut req: Request, env: &Env, _ctx: SessionContext) ->
          VALUES (?1, ?2, ?3, ?4, ?5)",
     )
     .bind(&[name.as_str().into(), logo_url.as_str().into(),
-             website_url.as_str().into(), sort_order.into(), active.into()])
+             website_url.as_str().into(),
+             wasm_bindgen::JsValue::from_f64(sort_order as f64),
+             wasm_bindgen::JsValue::from_f64(active as f64)])
     .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
     .run().await
     .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
@@ -1760,11 +1759,11 @@ pub async fn patch_client(mut req: Request, env: &Env, _ctx: SessionContext, id:
     push_str!("logo_url",    "logo_url");
     push_str!("website_url", "website_url");
     if let Some(n) = body.get("sort_order").and_then(|v| v.as_i64()) {
-        set_clauses.push(format!("sort_order = ?{}", idx)); bindings.push(n.into()); idx += 1;
+        set_clauses.push(format!("sort_order = ?{}", idx)); bindings.push(wasm_bindgen::JsValue::from_f64(n as f64)); idx += 1;
     }
     if let Some(b) = body.get("active").and_then(|v| v.as_bool()) {
         let v: i64 = if b { 1 } else { 0 };
-        set_clauses.push(format!("active = ?{}", idx)); bindings.push(v.into()); idx += 1;
+        set_clauses.push(format!("active = ?{}", idx)); bindings.push(wasm_bindgen::JsValue::from_f64(v as f64)); idx += 1;
     }
     if set_clauses.is_empty() {
         return error_to_response(WorkerError::Validation(ValidationError::InvalidInput("No fields provided".into())));
@@ -1879,7 +1878,8 @@ pub async fn add_post_team_member(mut req: Request, env: &Env, _ctx: SessionCont
     )
     .bind(&[post_id.into(), staff_id_val,
              ext_name.as_str().into(), ext_role.as_str().into(),
-             ext_url.as_str().into(), sort_order.into()])
+             ext_url.as_str().into(),
+             wasm_bindgen::JsValue::from_f64(sort_order as f64)])
     .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?
     .run().await
     .map_err(|e| WorkerError::Db(DbError::Query(e.to_string())))?;
