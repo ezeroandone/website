@@ -1705,9 +1705,9 @@ pub async fn create_client(mut req: Request, env: &Env, _ctx: SessionContext) ->
         .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
     let name = body.get("name").and_then(|v| v.as_str()).unwrap_or("").trim().to_string();
     let logo_url = body.get("logo_url").and_then(|v| v.as_str()).unwrap_or("").trim().to_string();
-    if name.is_empty() || logo_url.is_empty() {
+    if name.is_empty() {
         return error_to_response(WorkerError::Validation(
-            ValidationError::InvalidInput("name and logo_url are required".into()),
+            ValidationError::InvalidInput("name is required".into()),
         ));
     }
     let website_url = body.get("website_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
