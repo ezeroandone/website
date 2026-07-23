@@ -146,10 +146,12 @@
     <GlassCard accentColor="blue">
       <div class="card-pad">
         <form class="profile-form" onsubmit={handleSave}>
-          <!-- Avatar preview + URL -->
+          <!-- Avatar preview + upload -->
           <div class="avatar-section">
             <div class="avatar-preview" aria-hidden="true">
-              {#if avatarUrl}
+              {#if uploadingAvatar}
+                <span class="material-icons-outlined avatar-uploading-icon" aria-hidden="true">sync</span>
+              {:else if avatarUrl}
                 <img src={avatarUrl} alt="Avatar preview" class="avatar-img" />
               {:else}
                 <span class="avatar-placeholder">
@@ -158,30 +160,31 @@
               {/if}
             </div>
             <div class="avatar-fields">
-              <label class="field">
-                <span class="field-label">Upload photo</span>
+              <!-- Styled upload button — hides the raw file input -->
+              <label class="upload-btn" class:upload-btn--busy={uploadingAvatar}>
+                <span class="material-icons-outlined" aria-hidden="true">
+                  {uploadingAvatar ? 'sync' : 'upload'}
+                </span>
+                {uploadingAvatar ? 'Uploading…' : 'Choose photo'}
                 <input
                   type="file"
-                  class="input input--file"
+                  class="file-input-hidden"
                   accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingAvatar}
                   onchange={handleAvatarUpload}
                 />
               </label>
               <p class="field-hint">JPG, PNG or WebP · max 5 MB</p>
-              {#if uploadingAvatar}
-                <p class="field-hint" style="color:#00C2FF">Uploading…</p>
-              {/if}
               <div class="field-divider">or paste a URL</div>
               <label class="field">
                 <span class="field-label">Avatar URL</span>
                 <input
-                  type="url"
+                  type="text"
                   class="input"
                   bind:value={avatarUrl}
-                  placeholder="https://…"
+                  placeholder="https://… or /media/avatars/…"
                 />
               </label>
-              <p class="field-hint">Paste a direct image URL (JPG, PNG, WebP).</p>
             </div>
           </div>
 
@@ -387,9 +390,48 @@
     margin: 0;
   }
 
-  .input--file {
-    padding: 6px 10px;
+  /* Upload button — styled label wrapping a hidden file input */
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(0, 194, 255, 0.1);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    border-radius: 8px;
+    color: #00C2FF;
+    font-size: 0.8rem;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    align-self: flex-start;
+  }
+
+  .upload-btn:hover { background: rgba(0, 194, 255, 0.18); }
+
+  .upload-btn--busy {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .upload-btn--busy .material-icons-outlined {
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* Hidden native file input inside the styled label */
+  .file-input-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0; overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* Avatar uploading spinner */
+  .avatar-uploading-icon {
+    font-size: 1.8rem;
+    color: #00C2FF;
+    animation: spin 0.8s linear infinite;
   }
 
   .field-divider {
