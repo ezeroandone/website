@@ -50,7 +50,7 @@
   // ── Scene state ───────────────────────────────────────────────────
   let animFrame: number;
   let scene: any, camera: any, renderer: any;
-  let nodeGroup: any, edgeGroup: any, electronGroup: any, clock: any;
+  let nodeGroup: any, edgeGroup: any, electronGroup: any;
 
   interface NodeData { mesh: any; base: any; pulse: number; }
   interface EdgeData { line: any; from: number; to: number; active: boolean; }
@@ -105,7 +105,9 @@
     const THREE = await import('three');
 
     scene = new THREE.Scene();
-    clock = new THREE.Clock();
+    // Use performance.now() instead of deprecated THREE.Clock
+    let startTime = performance.now();
+    const getElapsed = () => (performance.now() - startTime) / 1000;
 
     const w = canvasEl!.clientWidth  || 560;
     const h = canvasEl!.clientHeight || 560;
@@ -227,8 +229,8 @@
     nodeGroup.userData.surfaceMesh = brainSurfaceMesh;
     const animate = () => {
       animFrame = requestAnimationFrame(animate);
-      const t   = clock.getElapsedTime();
-      clock.getDelta(); // consume delta
+      const t   = getElapsed();
+      // consume nothing — performance.now() based
 
       // Slow gentle rotation — sync all groups + brain shell
       const rotY = t * 0.07;

@@ -63,10 +63,13 @@
         { opacity: 0, y: 20 },
         { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.6 }
       );
-      gsap.fromTo('.hero-badge',
-        { opacity: 0, scale: 0.9 },
-        { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)', delay: 0.8 }
-      );
+      // Only animate badge if it exists in DOM (requires openRoles > 0)
+      if (document.querySelector('.hero-badge')) {
+        gsap.fromTo('.hero-badge',
+          { opacity: 0, scale: 0.9 },
+          { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)', delay: 0.8 }
+        );
+      }
       gsap.fromTo('.hero-right',
         { opacity: 0, x: 40 },
         { opacity: 1, x: 0, duration: 1.1, ease: 'power3.out', delay: 0.3 }
