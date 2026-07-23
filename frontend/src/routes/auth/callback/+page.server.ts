@@ -2,8 +2,9 @@
  * Auth callback server load.
  *
  * Forwards the `?token` query parameter to the Worker's
- * GET /api/auth/callback endpoint. The Worker validates the token,
- * sets the session cookie, and returns a redirect response.
+ * GET /api/auth/callback endpoint. The Worker validates the token and
+ * returns JSON { jwt, redirect }. This page sets the session cookie
+ * directly (so it's scoped to ezeroandone.io) and redirects the user.
  *
  * Requirements: 1.6, 15.1
  */
@@ -14,53 +15,73 @@ import type { RequestEvent } from '@sveltejs/kit';
 export async function load({ url, fetch, cookies }: RequestEvent) {
 	const token = url.searchParams.get('token');
 
-	// A missing token is a client error — render the error boundary.
 	if (!token) {
 		throw error(400, 'Missing token');
 	}
 
-	// Forward the session cookie (if any) so the Worker can detect
-	// an already-authenticated session, then pass the token for exchange.
-	const session = cookies.get('session');
-	const headers: Record<string, string> = {};
-	if (session) {
-		headers['Cookie'] = `session=${session}`;
-	}
+	const apiUrl = `/api/auth/callback?token=${encodeURIComponent(token)}`;
+	console.log('[callback] fetching', apiUrl);
 
 	let res: Response;
 	try {
-		res = await fetch(`/api/auth/callback?token=${encodeURIComponent(token)}`, {
-			method: 'GET',
-			headers,
-			// Do NOT follow redirects automatically — the Worker sets the
-			// session cookie on the redirect response and we need to capture it.
-			redirect: 'manual',
-		});
-	} catch {
+		res = await fetch(apiUrl, { method: 'GET' });
+	} catch (e) {
+		console.error('[callback] fetch threw:', e);
 		throw error(502, 'Unable to reach the authentication service.');
 	}
 
-	// The Worker responds with a redirect (302) on success and sets
-	// Set-Cookie: session=<jwt>; HttpOnly; Secure; SameSite=Strict.
-	// SvelteKit's `fetch` with redirect:'manual' exposes a 0-status
-	// opaque redirect, but Cloudflare Pages fetch will surface a real
-	// 3xx.  Handle both cases.
-	if (res.status === 302 || res.status === 301 || res.status === 303) {
-		const location = res.headers.get('location') ?? '/dashboard';
-		throw redirect(302, location);
-	}
+	console.log('[callback] worker status:', res.status);
 
-	// 200 means the Worker returned data without a redirect (unlikely but
-	// handle gracefully by sending the user to /dashboard).
 	if (res.ok) {
-		throw redirect(302, '/dashboard');
+		let raw: string;
+		try {
+			raw = await res.text();
+		} catch (e) {
+			throw error(500, `Failed to read auth response body: ${e}`);
+		}
+
+		console.log('[callback] worker body:', raw);
+
+		let data: { jwt: string; redirect: string };
+		try {
+			data = JSON.parse(raw) as { jwt: string; redirect: string };
+		} catch (e) {
+			throw error(500, `Failed to parse auth response as JSON: ${e} — body was: ${raw}`);
+		}
+
+		if (!data.jwt) {
+			throw error(500, `Auth response missing JWT — parsed: ${JSON.stringify(data)}`);
+		}
+
+		console.log('[callback] jwt prefix:', data.jwt.slice(0, 20), '  redirect:', data.redirect);
+
+		// SameSite=Lax (not Strict) is required here: with Strict, the browser
+		// won't send the cookie on the immediate redirect from /auth/callback
+		// to /onboarding because the navigation originates from an email link
+		// (cross-site context). Lax sends the cookie on top-level GET navigations
+		// while still blocking it on cross-site POST/fetch, which is sufficient
+		// CSRF protection for a session cookie.
+		cookies.set('session', data.jwt, {
+			path: '/',
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax',
+			maxAge: 86400,
+		});
+
+		console.log('[callback] cookie set, redirecting to', data.redirect ?? '/admin/dashboard');
+		throw redirect(302, data.redirect ?? '/admin/dashboard');
 	}
 
-	// 401 → invalid or expired token.
+	// Non-2xx — capture body for the error message
+	let body = '';
+	try { body = await res.text(); } catch { body = '(unreadable)'; }
+
+	console.error('[callback] worker error response:', res.status, body);
+
 	if (res.status === 401) {
 		throw error(401, 'This magic link is invalid or has already been used. Please request a new one.');
 	}
 
-	// Any other failure.
-	throw error(res.status, 'Authentication failed. Please try again.');
+	throw error(res.status, `Authentication failed (${res.status}): ${body}`);
 };

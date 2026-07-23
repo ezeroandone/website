@@ -1,0 +1,52 @@
+[package]
+name = "worker"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# cdylib for the wasm build; rlib enables `cargo test` to compile and run
+# tests natively on the host (wasm binaries cannot execute on Windows).
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Enable the rusqlite-based D1 schema integration tests.
+# Requires a configured C toolchain (MSVC with SDK env vars, or gcc/clang) to
+# compile SQLite from source.  Run with: cargo test --features schema-tests
+schema-tests = ["rusqlite"]
+
+[dependencies]
+worker         = { version = "0.4", features = ["d1"] }
+worker-macros  = "0.4"
+serde          = { version = "1", features = ["derive"] }
+serde_json     = "1"
+uuid           = { version = "1", features = ["v4", "js"] }
+hmac           = "0.12"
+sha2           = "0.10"
+base64         = "0.22"
+# getrandom 0.2 (for uuid/js) and 0.3 (for rand_core) both need explicit
+# wasm_js backend features when targeting wasm32-unknown-unknown.
+getrandom      = { version = "0.2", features = ["js"] }
+getrandom03    = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+# rusqlite is used for schema integration tests (in-memory SQLite).
+# Optional: only compiled when the `schema-tests` feature is enabled.
+# bundled feature includes the SQLite C source so no system library is required.
+rusqlite       = { version = "0.31", features = ["bundled"], optional = true }
+
+[dev-dependencies]
+# default-features = false disables the `timeout` feature which pulls in
+# `wait-timeout`, a crate that fails to compile on Windows (native target).
+# Fork-based shrinking is not needed for our property tests.
+proptest  = { version = "1", default-features = false, features = ["std"] }
+# rand is used as a CSPRNG stand-in for native (non-wasm) property tests where
+# web_sys is unavailable. Pinned to the 0.8 line for API stability.
+rand      = "0.8"
+
+[profile.release]
+opt-level     = "z"
+lto           = true
+codegen-units = 1
+panic         = "abort"
+strip         = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

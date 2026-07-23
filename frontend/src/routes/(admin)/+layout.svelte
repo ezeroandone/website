@@ -6,19 +6,27 @@
   let { data, children }: LayoutProps = $props();
 
   const navItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: '⬛' },
-    { href: '/admin/staff',     label: 'Staff',     icon: '👤' },
-    { href: '/admin/careers',   label: 'Careers',   icon: '💼' },
-    { href: '/admin/content',   label: 'Content',   icon: '📄' },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard'  },
+    { href: '/admin/staff',     label: 'Staff',     icon: 'group'      },
+    { href: '/admin/careers',   label: 'Careers',   icon: 'work'       },
+    { href: '/admin/content',   label: 'Content',   icon: 'edit_note'  },
+    { href: '/admin/clients',   label: 'Clients',   icon: 'business'   },
+    { href: '/admin/profile',   label: 'My Profile', icon: 'manage_accounts' },
   ] as const;
 </script>
 
-<div class="admin-shell" data-theme={$theme}>
-  <!-- Sidebar navigation -->
+<svelte:head>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+</svelte:head>
+
+<div class="admin-shell">
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <span class="brand-mark">eZO</span>
-      <span class="brand-label">Admin</span>
+      <a href="/admin/dashboard" class="brand-link" aria-label="Admin dashboard">
+        <span class="brand-wordmark">eZeroAndOne.io</span>
+        <span class="brand-sub">Admin</span>
+      </a>
     </div>
 
     <nav class="sidebar-nav" aria-label="Admin navigation">
@@ -29,141 +37,329 @@
           class:active={$page.url.pathname.startsWith(item.href)}
           aria-current={$page.url.pathname.startsWith(item.href) ? 'page' : undefined}
         >
-          <span class="nav-icon" aria-hidden="true">{item.icon}</span>
+          <span class="material-icons-outlined nav-icon" aria-hidden="true">{item.icon}</span>
           <span class="nav-label">{item.label}</span>
+          {#if $page.url.pathname.startsWith(item.href)}
+            <span class="active-pip" aria-hidden="true"></span>
+          {/if}
         </a>
       {/each}
     </nav>
 
     <div class="sidebar-footer">
-      <span class="user-email">{data.session.email}</span>
-      <span class="user-role">{data.session.role}</span>
+      <a href="/" class="back-to-site" title="Back to public site">
+        <span class="material-icons-outlined" aria-hidden="true">home</span>
+        <span class="back-to-site-label">Back to site</span>
+      </a>
+      <div class="footer-divider"></div>
+      <div class="footer-user-row">
+        <div class="user-info">
+          <div class="user-avatar" aria-hidden="true">
+            {data.session.email.charAt(0).toUpperCase()}
+          </div>
+          <div class="user-details">
+            <span class="user-email">{data.session.email}</span>
+            <span class="user-role">{data.session.role}</span>
+          </div>
+        </div>
+        <a href="/api/auth/logout" class="logout-btn" title="Sign out">
+          <span class="material-icons-outlined" aria-hidden="true">logout</span>
+        </a>
+      </div>
     </div>
   </aside>
 
-  <!-- Main content area -->
+  <!-- ── Main content ──────────────────────────────────────── -->
   <main class="admin-main">
-    {@render children()}
+    <div class="admin-content">
+      {@render children()}
+    </div>
   </main>
 </div>
 
 <style>
+  /* ── Shell ───────────────────────────────────────────────── */
   .admin-shell {
     display: flex;
-    min-height: 100vh;
-    background-color: var(--color-bg-primary, #0a0a0f);
-    color: var(--color-text-primary, #f0f0f0);
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    color: #f0f0f0;
+    /* Reset body padding-top set for public header */
+    margin-top: calc(-1 * var(--header-height, 64px));
   }
 
   /* ── Sidebar ─────────────────────────────────────────────── */
   .sidebar {
-    width: 220px;
+    width: 224px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    background: var(--glass-bg, rgba(255, 255, 255, 0.04));
-    backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%);
-    -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%);
-    border-right: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+    background: #050508;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
   }
 
+  /* Brand */
   .sidebar-brand {
+    padding: 22px 18px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .brand-link {
     display: flex;
     align-items: baseline;
-    gap: 6px;
-    padding: 24px 20px 16px;
-    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+    gap: 8px;
+    text-decoration: none;
   }
 
-  .brand-mark {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--accent-blue, #00d4ff);
-    letter-spacing: -0.5px;
+  .brand-wordmark {
+    font-family: var(--font-heading, 'Inter Tight', sans-serif);
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #ffffff;
   }
 
-  .brand-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-text-secondary, #888899);
+  .brand-sub {
+    font-size: 0.65rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.3);
   }
 
-  /* ── Navigation links ────────────────────────────────────── */
+  /* Nav */
   .sidebar-nav {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 12px 10px;
+    padding: 14px 10px;
+    overflow-y: auto;
+    scrollbar-width: none;
   }
 
+  .sidebar-nav::-webkit-scrollbar { display: none; }
+
   .nav-link {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    color: var(--color-text-secondary, #888899);
+    padding: 9px 12px;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.45);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background 0.15s, color 0.15s;
+    overflow: hidden;
   }
 
   .nav-link:hover {
-    background: var(--bg-elevated, rgba(255, 255, 255, 0.08));
-    color: var(--color-text-primary, #f0f0f0);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
     text-decoration: none;
   }
 
   .nav-link.active {
-    background: color-mix(in srgb, var(--accent-blue, #00d4ff) 15%, transparent);
-    color: var(--accent-blue, #00d4ff);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-blue, #00d4ff) 30%, transparent);
+    background: rgba(0,194,255,0.1);
+    color: #00C2FF;
   }
 
   .nav-icon {
-    font-size: 1rem;
-    width: 20px;
-    text-align: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.15s;
   }
 
-  .nav-label {
-    flex: 1;
+  .nav-link:hover .nav-icon,
+  .nav-link.active .nav-icon { opacity: 1; }
+
+  .nav-label { flex: 1; }
+
+  .active-pip {
+    width: 3px;
+    height: 16px;
+    background: #00C2FF;
+    border-radius: 3px;
+    flex-shrink: 0;
   }
 
-  /* ── Sidebar footer ──────────────────────────────────────── */
+  /* Footer */
   .sidebar-footer {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 14px 20px;
-    border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+    gap: 0;
+    padding: 12px 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .back-to-site {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .back-to-site:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+  }
+
+  .back-to-site .material-icons-outlined { font-size: 1.05rem; }
+
+  .back-to-site-label { font-size: 0.8rem; }
+
+  .footer-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 6px 0;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .footer-user-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 2px;
+  }
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0,194,255,0.15);
+    border: 1px solid rgba(0,194,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #00C2FF;
+    flex-shrink: 0;
+  }
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
 
   .user-email {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary, #888899);
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .user-role {
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: 0.6rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--accent-green, #00ff88);
+    letter-spacing: 0.08em;
+    color: #00C2FF;
   }
 
-  /* ── Main content ────────────────────────────────────────── */
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.3);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .logout-btn:hover {
+    background: rgba(255,51,102,0.12);
+    color: #ff3366;
+    text-decoration: none;
+  }
+
+  .logout-btn .material-icons-outlined { font-size: 1.1rem; }
+
+  /* ── Main area ───────────────────────────────────────────── */
   .admin-main {
     flex: 1;
     overflow-y: auto;
-    padding: 32px;
-    background-color: var(--color-bg-primary, #0a0a0f);
+    background: #080810;
+    /* Thin themed scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  .admin-main::-webkit-scrollbar { width: 4px; }
+  .admin-main::-webkit-scrollbar-track { background: transparent; }
+  .admin-main::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+  .admin-main::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .admin-content {
+    padding: 32px 36px;
+    max-width: 1200px;
+  }
+
+  /* ── Global admin form theming ───────────────────────────── */
+  /* Propagates to all child pages via the layout */
+  :global(.admin-shell input),
+  :global(.admin-shell textarea),
+  :global(.admin-shell select) {
+    color-scheme: dark;
+    background: #0d0d18;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #f0f0f0;
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+
+  :global(.admin-shell input:focus),
+  :global(.admin-shell textarea:focus),
+  :global(.admin-shell select:focus) {
+    outline: none;
+    border-color: #00C2FF;
+    box-shadow: 0 0 0 3px rgba(0,194,255,0.15);
+  }
+
+  :global(.admin-shell input::placeholder),
+  :global(.admin-shell textarea::placeholder) {
+    color: rgba(255,255,255,0.25);
+  }
+
+  :global(.admin-shell select option) {
+    background: #0d0d18;
+    color: #f0f0f0;
   }
 </style>

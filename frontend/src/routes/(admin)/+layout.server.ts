@@ -60,26 +60,26 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 
   // No cookie present → redirect to login (Requirement 15.5)
   if (!token) {
-    redirect(302, '/auth/login');
+    throw redirect(302, '/auth/login');
   }
 
   const claims = decodeJwtPayload(token);
 
   // Malformed token → redirect
   if (!claims) {
-    redirect(302, '/auth/login');
+    throw redirect(302, '/auth/login');
   }
 
   // Expired token → redirect
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (claims.exp <= nowSeconds) {
-    redirect(302, '/auth/login');
+    throw redirect(302, '/auth/login');
   }
 
   // Insufficient role → redirect (Requirement 15.4: requires Admin or above)
   const userLevel = ROLE_LEVEL[claims.role] ?? 0;
   if (userLevel < ADMIN_REQUIRED_LEVEL) {
-    redirect(302, '/auth/login');
+    throw redirect(302, '/auth/login');
   }
 
   // Pass minimal safe session data to admin layout and child pages

@@ -1,19 +1,20 @@
 name                = "ezeroandone-api"
-main                = "worker/build/worker/shim.mjs"
+main                = "build/worker/shim.mjs"
 compatibility_date  = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding       = "DB"
 database_name = "ezeroandone-db"
-database_id   = "<uuid>"
+database_id   = "2a83073a-1a75-4182-815c-47a9cb07c31c"
 
 [[kv_namespaces]]
 binding = "EZO_AUTH"
-id      = "<uuid>"
+id      = "86999f17aa3b495182f862d30f990870"
 
 [[kv_namespaces]]
 binding = "EZO_CACHE"
-id      = "<uuid>"
+id      = "0f8ec1f6693d49eda8fbc9c4f0c00551"
 
 [[r2_buckets]]
 binding     = "EZO_MEDIA"

@@ -17,6 +17,7 @@ frontend/dist/
 .env
 .env.*
 !.env.example
+*.pem
 
 # ── OS / editor ─────────────────────────────────────────────
 .DS_Store
@@ -25,3 +26,9 @@ Thumbs.db
 
 # ── Snapshots (local-only diffing tool) ─────────────────────
 .snapshots/
+
+# ── Kiro IDE workspace files ─────────────────────────────────
+.kiro/
+
+# ── Scripts runtime state ────────────────────────────────────
+scripts/.populate-state.json
