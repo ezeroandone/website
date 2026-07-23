@@ -1,1 +1,2 @@
 /api/* https://api.ezeroandone.io/api/:splat 200
+/media/* https://api.ezeroandone.io/media/:splat 200
